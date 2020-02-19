@@ -7,6 +7,8 @@
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
 
+#include "SQuickPluginConfigTool.h"
+
 static const FName QuickPluginConfigToolTabName("QuickPluginConfigTool");
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
@@ -65,7 +67,7 @@ TSharedRef<SDockTab> FQuickPluginConfigToolModule::OnSpawnPluginTab(const FSpawn
 		.TabRole(ETabRole::NomadTab)
 		[
 			// Put your tab content here!
-			SNew(SBox)
+			SNew(SQuickPluginConfigTool)
 		];
 }
 
