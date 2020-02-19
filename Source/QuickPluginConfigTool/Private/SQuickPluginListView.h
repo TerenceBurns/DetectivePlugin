@@ -8,19 +8,37 @@
 #include "Widgets/SCompoundWidget.h"
 #include "SlateOptMacros.h"
 
-
+/**
+ *
+ */
 struct FPluginData
 {
 	FPluginData(const FString& InName)
 	 : PluginName(InName)
 	{}
 
+	//
 	FString PluginName;
+
+	//
+	bool bIsEnabledByDefault;
+
+	//
+	bool bEnabled;
+
+	//
+	bool bIsEnginePlugin;
+	
+	//
+	FString PluginLocation;
 };
 
 typedef TSharedPtr<FPluginData> FPluginDataPtr;
 
 
+/**
+ *
+ */
 class SPluginInfoRow : public SMultiColumnTableRow<FPluginDataPtr>
 {
 public:
@@ -30,23 +48,26 @@ public:
 	SLATE_END_ARGS()
 
 
+	/** */
 	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTableView)
 	{
 		PluginDataItem = InArgs._PluginDataItem;
 
-		SMultiColumnTableRow<FPluginDataPtr>::Construct(FSuperRowType::FArguments(), InOwnerTableView);
+		SMultiColumnTableRow<FPluginDataPtr>::Construct(FSuperRowType::FArguments().Padding(1.0f), InOwnerTableView);
 	}
-
+	
+	/** */
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
 
 
 private:
+	//
 	FPluginDataPtr PluginDataItem;
 };
 
 
 /**
- * Slate widget to allow users to edit Config Settings
+ * Slate widget to allow users to view ue4 plugin settings
  */
 class SQuickPluginListView
 	: public SCompoundWidget
@@ -65,6 +86,7 @@ public:
 	~SQuickPluginListView();
 
 private:
+	/** */
 	void PopulatePluginsAvailable();
 
 private:
@@ -72,12 +94,12 @@ private:
 	TSharedRef<ITableRow> OnGenerateWidgetForList(FPluginDataPtr InItem, const TSharedRef<STableViewBase>& OwnerTable);
 
 private:
-	/** Access to the list view of represented plugins. */
+	// Access to the list view of represented plugins.
 	TSharedPtr<class SListView<FPluginDataPtr>> PluginDetailsView;
 
-	/** */
+	//
 	TArray<FPluginDataPtr> FilteredPlugins;
 
-	/** */
+	//
 	TArray<FPluginDataPtr> AllPlugins;
 };
