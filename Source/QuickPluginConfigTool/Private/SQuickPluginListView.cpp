@@ -1,6 +1,7 @@
 // Copyright 2020 - Trifolium Digital Limited
 
 #include "SQuickPluginListView.h"
+#include "Interfaces/IPluginManager.h"
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
 
@@ -21,6 +22,8 @@ namespace PluginListViewHelpers
 
 void SQuickPluginListView::Construct(const FArguments& InArgs)
 {
+	PopulatePluginsAvailable();
+
 	ChildSlot
 	[
 		SNew(SBorder)
@@ -55,6 +58,16 @@ SQuickPluginListView::~SQuickPluginListView()
 
 }
 
+void SQuickPluginListView::PopulatePluginsAvailable()
+{
+	for (const TSharedRef<IPlugin>& Plugin : IPluginManager::Get().GetDiscoveredPlugins())
+	{
+		TSharedRef<FPluginData> PluginInfo = MakeShareable(new FPluginData(Plugin->GetName()));
+		AllPlugins.Add(PluginInfo);
+		FilteredPlugins.Add(PluginInfo);
+	}
+}
+
 TSharedRef<ITableRow> SQuickPluginListView::OnGenerateWidgetForList(FPluginDataPtr InItem, const TSharedRef<STableViewBase> &OwnerTable)
 {
 	return SNew(SPluginInfoRow, OwnerTable)
@@ -66,7 +79,8 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 {
 	if (InColumnName == PluginListViewHelpers::ListHeader_PluginName)
 	{
-
+		return SNew(STextBlock)
+			.Text(FText::FromString(PluginDataItem->PluginName));
 	}
 	if (InColumnName == PluginListViewHelpers::ListHeader_EnabledByDefault)
 	{

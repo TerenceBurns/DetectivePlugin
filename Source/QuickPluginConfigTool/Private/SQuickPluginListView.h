@@ -11,7 +11,11 @@
 
 struct FPluginData
 {
-	FPluginData() {}
+	FPluginData(const FString& InName)
+	 : PluginName(InName)
+	{}
+
+	FString PluginName;
 };
 
 typedef TSharedPtr<FPluginData> FPluginDataPtr;
@@ -59,6 +63,9 @@ public:
 
 	/** Destructor */
 	~SQuickPluginListView();
+
+private:
+	void PopulatePluginsAvailable();
 
 private:
 	/** */
