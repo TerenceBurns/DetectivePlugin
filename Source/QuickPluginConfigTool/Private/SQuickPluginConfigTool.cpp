@@ -1,6 +1,7 @@
 // Copyright 2020 - Trifolium Digital Limited
 
 #include "SQuickPluginConfigTool.h"
+#include "SProjectFileInfo.h"
 #include "SQuickPluginListView.h"
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
@@ -24,7 +25,16 @@ void SQuickPluginConfigTool::Construct(const FArguments& InArgs)
 		.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 		.Padding(4.0f)
 		[
-			SAssignNew(PluginDetailsView, SQuickPluginListView)
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			[
+				SNew(SProjectFileInfo)
+			]
+			+ SVerticalBox::Slot()
+			[
+				SAssignNew(PluginDetailsView, SQuickPluginListView)			
+			]
 		]
 	];
 }
