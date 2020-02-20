@@ -3,14 +3,22 @@
 #include "SProjectFileInfo.h"
 #include "ProjectDescriptor.h"
 #include "Interfaces/IProjectManager.h"
+#include "HAL/FileManager.h"
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
 
+/** 
+ * 
+ */
+namespace ProjectFileInfoPanelHelpers
+{
+	static const FSlateColor CanEditColour = FColor(32, 75, 16);
+	static const FSlateColor CanNotEditColour = FColor(75, 32, 16);
+}
 
 ///////////////////////////////////////////////////////////////////////
-// SQuickPluginConfigTool
+// SProjectFileInfo
 
-#pragma optimize("", off)
 
 void SProjectFileInfo::Construct(const FArguments& InArgs)
 {
@@ -18,17 +26,14 @@ void SProjectFileInfo::Construct(const FArguments& InArgs)
 //	const FProjectDescriptor* UProjectDescriptor = IProjectManager::Get().GetCurrentProject();
 //	FString Ext = UProjectDescriptor->GetExtension();
 
-	FString ProjectFilePath = FPaths::GetProjectFilePath();
-
-	// Green for now. We will update so it reflects writable status.
-	FColor StatusBGColour(32, 75, 16);
+	const FString ProjectFilePath = FPaths::GetProjectFilePath();
 
 	ChildSlot
 	[
 		SNew(SBorder)
 		.Padding(4.0f)
 		.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
-		.BorderBackgroundColor(StatusBGColour)
+		.BorderBackgroundColor(this, &SProjectFileInfo::GetInfoBackgroundColour)
 		[
 			SNew(SHorizontalBox)
 			+SHorizontalBox::Slot()
@@ -63,12 +68,18 @@ void SProjectFileInfo::Construct(const FArguments& InArgs)
 		]
 	];
 }
-#pragma optimize("", on)
 
 
 SProjectFileInfo::~SProjectFileInfo()
 {
 
+}
+
+
+FSlateColor SProjectFileInfo::GetInfoBackgroundColour() const
+{
+	const bool bIsProjectWritable = !IFileManager::Get().IsReadOnly(*FPaths::GetProjectFilePath());
+	return bIsProjectWritable ? ProjectFileInfoPanelHelpers::CanEditColour : ProjectFileInfoPanelHelpers::CanNotEditColour;
 }
 
 #undef LOCTEXT_NAMESPACE

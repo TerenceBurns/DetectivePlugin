@@ -25,4 +25,10 @@ public:
 
 	/** Destructor */
 	~SProjectFileInfo();
+
+private:
+	/** 
+	 *
+	 */
+	FSlateColor GetInfoBackgroundColour() const;
 };
