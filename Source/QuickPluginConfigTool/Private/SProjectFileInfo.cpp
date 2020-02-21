@@ -2,6 +2,7 @@
 
 #include "SProjectFileInfo.h"
 #include "ProjectDescriptor.h"
+#include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Interfaces/IProjectManager.h"
 #include "HAL/FileManager.h"
 
@@ -14,6 +15,8 @@ namespace ProjectFileInfoPanelHelpers
 {
 	static const FSlateColor CanEditColour = FColor(32, 75, 16);
 	static const FSlateColor CanNotEditColour = FColor(75, 32, 16);
+
+	const double ProjectReadOnlyFlagPeriodicCheckTime = 1.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -22,11 +25,13 @@ namespace ProjectFileInfoPanelHelpers
 
 void SProjectFileInfo::Construct(const FArguments& InArgs)
 {
+	LastReadOnlyCheckTime = 0.0f;
 	// To use later.
 //	const FProjectDescriptor* UProjectDescriptor = IProjectManager::Get().GetCurrentProject();
 //	FString Ext = UProjectDescriptor->GetExtension();
 
 	const FString ProjectFilePath = FPaths::GetProjectFilePath();
+	bIsProjectWritable = !IFileManager::Get().IsReadOnly(*ProjectFilePath);
 
 	ChildSlot
 	[
@@ -35,34 +40,75 @@ void SProjectFileInfo::Construct(const FArguments& InArgs)
 		.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
 		.BorderBackgroundColor(this, &SProjectFileInfo::GetInfoBackgroundColour)
 		[
-			SNew(SHorizontalBox)
-			+SHorizontalBox::Slot()
-			.AutoWidth()
-			.Padding( 0.0f, 0.0f, 4.0f, 0.0f )
+			SNew(SWidgetSwitcher)
+			.WidgetIndex(this, &SProjectFileInfo::HandleNoticeSwitcherWidgetIndex)
+			// Locked slot
+			+ SWidgetSwitcher::Slot()
 			[
-				SNew(SBox)
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Top)
+				SNew(SHorizontalBox)
+				+SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding( 0.0f, 0.0f, 4.0f, 0.0f )
 				[
-					SNew(SImage)
-					.Image(FEditorStyle::GetBrush("LevelEditor.Tabs.Details"))
+					SNew(SBox)
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Top)
+					[
+						SNew(SImage)
+						.Image(FEditorStyle::GetBrush("LevelEditor.Tabs.Details"))
+					]
+				]
+				+SHorizontalBox::Slot()
+				.HAlign(HAlign_Left)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot()
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("ProjectFileInfoStatusStr", "Status:"))
+						.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					]
+					+ SVerticalBox::Slot()
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(FString::Printf(TEXT("    %s [%s]"), *ProjectFilePath, TEXT("LOCKED"))))
+						.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					]
 				]
 			]
-			+SHorizontalBox::Slot()
-			.HAlign(HAlign_Left)
+
+			// Unlocked slot
+			+ SWidgetSwitcher::Slot()
 			[
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot()
+				SNew(SHorizontalBox)
+				+SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding( 0.0f, 0.0f, 4.0f, 0.0f )
 				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("ProjectFileInfoStatusStr", "Status:"))
-					.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					SNew(SBox)
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Top)
+					[
+						SNew(SImage)
+						.Image(FEditorStyle::GetBrush("LevelEditor.Tabs.Details"))
+					]
 				]
-				+ SVerticalBox::Slot()
+				+SHorizontalBox::Slot()
+				.HAlign(HAlign_Left)
 				[
-					SNew(STextBlock)
-					.Text(FText::FromString(FString::Printf(TEXT("    %s [%s]"), *ProjectFilePath, TEXT("WRITABLE"))))
-					.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot()
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("ProjectFileInfoStatusStr", "Status:"))
+						.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					]
+					+ SVerticalBox::Slot()
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(FString::Printf(TEXT("    %s [%s]"), *ProjectFilePath, TEXT("WRITABLE"))))
+						.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					]
 				]
 			]
 		]
@@ -75,11 +121,25 @@ SProjectFileInfo::~SProjectFileInfo()
 
 }
 
+void SProjectFileInfo::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
+{
+	if (InCurrentTime - LastReadOnlyCheckTime >= ProjectFileInfoPanelHelpers::ProjectReadOnlyFlagPeriodicCheckTime)
+	{
+		bIsProjectWritable = !IFileManager::Get().IsReadOnly(*FPaths::GetProjectFilePath());
+		LastReadOnlyCheckTime = InCurrentTime;
+	}
+}
 
 FSlateColor SProjectFileInfo::GetInfoBackgroundColour() const
 {
-	const bool bIsProjectWritable = !IFileManager::Get().IsReadOnly(*FPaths::GetProjectFilePath());
 	return bIsProjectWritable ? ProjectFileInfoPanelHelpers::CanEditColour : ProjectFileInfoPanelHelpers::CanNotEditColour;
+}
+
+
+// Callback for getting the widget index for the notice switcher.
+int32 SProjectFileInfo::HandleNoticeSwitcherWidgetIndex() const
+{
+	return bIsProjectWritable ? 1 : 0; // Unlocked by default, For now
 }
 
 #undef LOCTEXT_NAMESPACE

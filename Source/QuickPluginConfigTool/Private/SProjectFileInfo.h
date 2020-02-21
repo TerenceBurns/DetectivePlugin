@@ -26,9 +26,27 @@ public:
 	/** Destructor */
 	~SProjectFileInfo();
 
+
+	// SWidget interface
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
+	// End of SWidget interface
+
 private:
 	/** 
 	 *
 	 */
 	FSlateColor GetInfoBackgroundColour() const;
+
+	/**
+	 *
+	 */
+	int32 HandleNoticeSwitcherWidgetIndex() const;
+
+private:
+
+	//
+	bool bIsProjectWritable;
+
+	//
+	double LastReadOnlyCheckTime = 0.0;
 };
