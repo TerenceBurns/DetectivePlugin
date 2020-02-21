@@ -20,7 +20,10 @@ namespace PluginListViewHelpers
 	const float ListHeader_IsEnginePlugin_Ratio = 1.0f / 5.0f;
 
 	static FName ListHeader_PluginLocation("PluginLocation");
-	const float ListHeader_PluginLocation_Ratio = 3.0f / 5.0f;;
+	const float ListHeader_PluginLocation_Ratio = 3.0f / 5.0f;
+
+	static FName ListHeader_Developer("Developer");
+	const float ListHeader_Developer_Ratio = 1.0f / 5.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -57,6 +60,9 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
 				.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
 				.FillWidth(PluginListViewHelpers::ListHeader_PluginLocation_Ratio)
+				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_Developer)
+				.DefaultLabel(LOCTEXT("PluginIsEnginePluginHeader", "Developer"))
+				.FillWidth(PluginListViewHelpers::ListHeader_Developer_Ratio)
 				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_IsEnginePlugin)
 				.DefaultLabel(LOCTEXT("PluginIsEnginePluginHeader", "Is Engine Plugin?"))
 				.FillWidth(PluginListViewHelpers::ListHeader_IsEnginePlugin_Ratio)
@@ -80,6 +86,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		PluginInfo->bIsEnabledByDefault = Plugin->IsEnabledByDefault();
 		PluginInfo->bEnabled = Plugin->IsEnabled();
 		PluginInfo->bIsEnginePlugin = Plugin->GetType() == EPluginType::Engine;
+		PluginInfo->Developer = Plugin->GetDescriptor().CreatedBy;
 
 		AllPlugins.Add(PluginInfo);
 		FilteredPlugins.Add(PluginInfo);
@@ -137,6 +144,11 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 	{
 		ColumnWidget = SNew(STextBlock)
 			.Text(FText::FromString(PluginDataItem->PluginLocation));
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_Developer)
+	{
+		ColumnWidget = SNew(STextBlock)
+			.Text(FText::FromString(PluginDataItem->Developer));
 	}
 	else
 	{

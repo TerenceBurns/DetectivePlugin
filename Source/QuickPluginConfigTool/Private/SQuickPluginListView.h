@@ -31,6 +31,9 @@ struct FPluginData
 	
 	//
 	FString PluginLocation;
+
+	//
+	FString Developer;
 };
 
 typedef TSharedPtr<FPluginData> FPluginDataPtr;
