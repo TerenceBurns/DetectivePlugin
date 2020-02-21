@@ -64,6 +64,9 @@ public:
 	/** */
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
 
+private:
+	/** */
+	void OnPluginEnabledChanged(ECheckBoxState EnabledCheckBoxState);
 
 private:
 	//

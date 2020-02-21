@@ -2,6 +2,7 @@
 
 #include "SQuickPluginListView.h"
 #include "Interfaces/IPluginManager.h"
+#include "Interfaces/IProjectManager.h"
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
 
@@ -117,7 +118,17 @@ TSharedRef<ITableRow> SQuickPluginListView::OnGenerateWidgetForList(FPluginDataP
 TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColumnName)
 {
 	TSharedPtr<SWidget> ColumnWidget;
-	if (InColumnName == PluginListViewHelpers::ListHeader_PluginName)
+	if (InColumnName == PluginListViewHelpers::ListHeader_EnablePlugin)
+	{
+		ColumnWidget = SNew(SBox)
+			.HAlign(EHorizontalAlignment::HAlign_Center)
+			[
+				SNew(SCheckBox)
+				.IsChecked(PluginDataItem->bEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+				.OnCheckStateChanged(this, &SPluginInfoRow::OnPluginEnabledChanged)
+			];
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_PluginName)
 	{
 		ColumnWidget = SNew(STextBlock)
 			.Text(FText::FromString(PluginDataItem->PluginName));
@@ -132,15 +143,6 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 				.IsEnabled(false)
 			];
 
-	}
-	else if (InColumnName == PluginListViewHelpers::ListHeader_EnablePlugin)
-	{
-		ColumnWidget = SNew(SBox)
-			.HAlign(EHorizontalAlignment::HAlign_Center)
-			[
-				SNew(SCheckBox)
-				.IsChecked(PluginDataItem->bEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-			];
 	}
 	else if (InColumnName == PluginListViewHelpers::ListHeader_IsEnginePlugin)
 	{
@@ -170,6 +172,27 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 	}
 
 	return ColumnWidget.ToSharedRef();
+}
+
+
+void SPluginInfoRow::OnPluginEnabledChanged(ECheckBoxState EnabledCheckBoxState)
+{
+	FText FailMessage;
+	if (IProjectManager::Get().SetPluginEnabled(PluginDataItem->PluginName, EnabledCheckBoxState == ECheckBoxState::Checked, FailMessage))
+	{
+		if (IProjectManager::Get().SaveCurrentProjectToDisk(FailMessage))
+		{
+			// Notify user of save?
+		}
+		else
+		{
+			FMessageDialog::Open(EAppMsgType::Ok, FailMessage);
+		}
+	}
+	else
+	{
+		FMessageDialog::Open(EAppMsgType::Ok, FailMessage);
+	}
 }
 
 
