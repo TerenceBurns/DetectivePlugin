@@ -6,7 +6,9 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SWidget.h"
 #include "Widgets/SCompoundWidget.h"
+#include "Widgets/Views/SHeaderRow.h"
 #include "SlateOptMacros.h"
+
 
 /**
  *
@@ -92,9 +94,18 @@ private:
 	/** */
 	void PopulatePluginsAvailable();
 
+	/** */
+	void SortList();
+
 private:
 	/** */
 	TSharedRef<ITableRow> OnGenerateWidgetForList(FPluginDataPtr InItem, const TSharedRef<STableViewBase>& OwnerTable);
+
+	/** */
+	EColumnSortMode::Type GetColumnSortMode(const FName InColumnName) const;
+
+	/** */
+	void OnColumnSortModeChanged(const EColumnSortPriority::Type SortPriority, const FName& InColumnName, const EColumnSortMode::Type InSortMode);
 
 private:
 	// Access to the list view of represented plugins.
@@ -105,4 +116,10 @@ private:
 
 	//
 	TArray<FPluginDataPtr> AllPlugins;
+
+	// 
+	EColumnSortMode::Type ListSortMode;
+
+	//
+	FName SortByColumn;
 };

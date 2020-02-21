@@ -39,7 +39,7 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 		.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 		.Padding(4.0f)
 		[
-			SNew(SListView<FPluginDataPtr>)
+			SAssignNew(PluginDetailsView, SListView<FPluginDataPtr>)
 			.ItemHeight(24)						
 			.ScrollbarVisibility(EVisibility::Visible)
 			.ListItemsSource(&FilteredPlugins)
@@ -51,21 +51,33 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 				.DefaultLabel(LOCTEXT("PluginEnableHeader", ""))
 				.DefaultTooltip(LOCTEXT("PluginEnableHeaderToolTip", "Enable for Project"))
 				.FixedWidth(PluginListViewHelpers::ListHeader_EnablePlugin_FixedWidth)
+				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_EnablePlugin)
+				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
 				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginName)
 				.DefaultLabel(LOCTEXT("PluginNameHeader", "Plugin Name"))
 				.FillWidth(PluginListViewHelpers::ListHeader_PluginName_Ratio)
+				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginName)
+				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_Developer)
+				.DefaultLabel(LOCTEXT("PluginDeveloperHeader", "Developer"))
+				.FillWidth(PluginListViewHelpers::ListHeader_Developer_Ratio)
+				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_Developer)
+				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
 				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_EnabledByDefault)
 				.DefaultLabel(LOCTEXT("PluginEnabledByDefaultHeader", "Enabled By Default?"))
 				.FillWidth(PluginListViewHelpers::ListHeader_EnabledByDefault_Ratio)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
-				.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
-				.FillWidth(PluginListViewHelpers::ListHeader_PluginLocation_Ratio)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_Developer)
-				.DefaultLabel(LOCTEXT("PluginIsEnginePluginHeader", "Developer"))
-				.FillWidth(PluginListViewHelpers::ListHeader_Developer_Ratio)
+				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_EnabledByDefault)
+				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
 				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_IsEnginePlugin)
 				.DefaultLabel(LOCTEXT("PluginIsEnginePluginHeader", "Is Engine Plugin?"))
 				.FillWidth(PluginListViewHelpers::ListHeader_IsEnginePlugin_Ratio)
+				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_IsEnginePlugin)
+				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
+				.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
+				.FillWidth(PluginListViewHelpers::ListHeader_PluginLocation_Ratio)
+				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginLocation)
+				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
 			)
 		]
 	];
@@ -156,6 +168,68 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 	}
 
 	return ColumnWidget.ToSharedRef();
+}
+
+
+EColumnSortMode::Type SQuickPluginListView::GetColumnSortMode(const FName InColumnName) const
+{
+	return InColumnName == SortByColumn ? ListSortMode : EColumnSortMode::None;
+}
+
+void SQuickPluginListView::OnColumnSortModeChanged(const EColumnSortPriority::Type SortPriority, const FName& InColumnName, const EColumnSortMode::Type InSortMode)
+{
+	SortByColumn = InColumnName;
+	ListSortMode = InSortMode;
+	SortList();
+}
+
+void SQuickPluginListView::SortList()
+{
+	if (SortByColumn == PluginListViewHelpers::ListHeader_PluginName)
+	{
+		if (ListSortMode == EColumnSortMode::Ascending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginName < B->PluginName; });
+		else
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginName > B->PluginName; });
+
+	}
+	else if (SortByColumn == PluginListViewHelpers::ListHeader_EnabledByDefault)
+	{
+		if (ListSortMode == EColumnSortMode::Ascending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->bIsEnabledByDefault; });
+		else if (ListSortMode == EColumnSortMode::Descending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return !A->bIsEnabledByDefault; });
+	}
+	else if (SortByColumn == PluginListViewHelpers::ListHeader_EnablePlugin)
+	{
+		if (ListSortMode == EColumnSortMode::Ascending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->bEnabled; });
+		else if (ListSortMode == EColumnSortMode::Descending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return !A->bEnabled; });
+	}
+	else if (SortByColumn == PluginListViewHelpers::ListHeader_IsEnginePlugin)
+	{
+		if (ListSortMode == EColumnSortMode::Ascending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->bIsEnginePlugin; });
+		else if (ListSortMode == EColumnSortMode::Descending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return !A->bIsEnginePlugin; });
+	}
+	else if (SortByColumn == PluginListViewHelpers::ListHeader_PluginLocation)
+	{
+		if (ListSortMode == EColumnSortMode::Ascending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginLocation < B->PluginLocation; });
+		else if (ListSortMode == EColumnSortMode::Descending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginLocation > B->PluginLocation; });
+	}
+	else if (SortByColumn == PluginListViewHelpers::ListHeader_Developer)
+	{
+		if (ListSortMode == EColumnSortMode::Ascending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->Developer < B->Developer; });
+		else if (ListSortMode == EColumnSortMode::Descending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->Developer > B->Developer; });
+	}
+
+	PluginDetailsView->RequestListRefresh();
 }
 
 #undef LOCTEXT_NAMESPACE
