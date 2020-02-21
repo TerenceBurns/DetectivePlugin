@@ -11,7 +11,7 @@ namespace PluginListViewHelpers
 	const float ListHeader_EnablePlugin_FixedWidth = 24.0f;
 	
 	static FName ListHeader_PluginName("PluginName");
-	const float ListHeader_PluginName_Ratio = 1.0f / 5.0f;
+	const float ListHeader_PluginName_Ratio = 1.5f / 5.0f;
 
 	static FName ListHeader_EnabledByDefault("EnabledByDefault");
 	const float ListHeader_EnabledByDefault_Ratio = 1.0f / 5.0f;
@@ -155,12 +155,14 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 	else if (InColumnName == PluginListViewHelpers::ListHeader_PluginLocation)
 	{
 		ColumnWidget = SNew(STextBlock)
-			.Text(FText::FromString(PluginDataItem->PluginLocation));
+			.Text(FText::FromString(PluginDataItem->PluginLocation))
+			.ColorAndOpacity(FSlateColor::UseSubduedForeground());
 	}
 	else if (InColumnName == PluginListViewHelpers::ListHeader_Developer)
 	{
 		ColumnWidget = SNew(STextBlock)
-			.Text(FText::FromString(PluginDataItem->Developer));
+			.Text(FText::FromString(PluginDataItem->Developer))
+			.ColorAndOpacity(FSlateColor::UseSubduedForeground());
 	}
 	else
 	{
