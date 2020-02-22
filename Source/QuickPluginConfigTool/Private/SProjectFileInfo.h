@@ -42,7 +42,18 @@ private:
 	 */
 	int32 HandleNoticeSwitcherWidgetIndex() const;
 
+	/**
+	 * 
+	 */
+	void CreateProjectWritableNoticeWidget();
+
 private:
+
+	//
+	TSharedPtr<SWidget> ProjectWritableNotice;
+
+	//
+	FString ProjectFilePath;
 
 	//
 	bool bIsProjectWritable;
