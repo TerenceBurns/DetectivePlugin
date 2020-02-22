@@ -29,7 +29,7 @@ struct FPluginData
 	bool bEnabled;
 
 	//
-	bool bIsEnginePlugin;
+	bool bIsEditorOnlyPlugin = true;
 	
 	//
 	FString PluginLocation;

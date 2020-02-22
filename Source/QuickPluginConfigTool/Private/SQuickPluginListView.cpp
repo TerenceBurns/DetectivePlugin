@@ -17,9 +17,6 @@ namespace PluginListViewHelpers
 	static FName ListHeader_EnabledByDefault("EnabledByDefault");
 	const float ListHeader_EnabledByDefault_Ratio = 1.0f / 5.0f;
 
-	static FName ListHeader_IsEnginePlugin("IsEnginePlugin");
-	const float ListHeader_IsEnginePlugin_Ratio = 1.0f / 5.0f;
-
 	static FName ListHeader_Developer("Developer");
 	const float ListHeader_Developer_Ratio = 1.0f / 5.0f;
 
@@ -95,10 +92,6 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_SupportedPlatforms)
 				.DefaultLabel(LOCTEXT("PluginSupportedPlatformsHeader", "Supported Platforms"))
 				.FillWidth(PluginListViewHelpers::ListHeader_SupportedPlatforms_Ratio)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_IsEnginePlugin)
-				.DefaultLabel(LOCTEXT("PluginIsEnginePluginHeader", "Is Engine Plugin?"))
-				.FillWidth(PluginListViewHelpers::ListHeader_IsEnginePlugin_Ratio)
-				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_IsEnginePlugin)
 				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
 				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
 				.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
@@ -124,9 +117,13 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		PluginInfo->PluginLocation = Plugin->GetBaseDir();
 		PluginInfo->bIsEnabledByDefault = Plugin->IsEnabledByDefault();
 		PluginInfo->bEnabled = Plugin->IsEnabled();
-		PluginInfo->bIsEnginePlugin = Plugin->GetType() == EPluginType::Engine;
 		PluginInfo->Developer = Plugin->GetDescriptor().CreatedBy;
 		PluginInfo->SupportedPlatforms = Plugin->GetDescriptor().SupportedTargetPlatforms;
+
+		for (const FModuleDescriptor& Module : Plugin->GetDescriptor().Modules)
+		{
+			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
+		}
 
 		AllPlugins.Add(PluginInfo);
 		FilteredPlugins.Add(PluginInfo);
@@ -198,16 +195,6 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 			];
 
 	}
-	else if (InColumnName == PluginListViewHelpers::ListHeader_IsEnginePlugin)
-	{
-		ColumnWidget = SNew(SBox)
-			.HAlign(EHorizontalAlignment::HAlign_Center)
-			[
-				SNew(SCheckBox)
-				.IsChecked(PluginDataItem->bIsEnginePlugin ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-				.IsEnabled(false)
-			];
-	}
 	else if (InColumnName == PluginListViewHelpers::ListHeader_PluginLocation)
 	{
 		ColumnWidget = SNew(STextBlock)
@@ -225,17 +212,18 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 		TSharedPtr<SHorizontalBox> SupportedPlatformsWidget = SNew(SHorizontalBox);
 		if (PluginDataItem->SupportedPlatforms.Num() == 0)
 		{
+			FText PlatformsLabel = PluginDataItem->bIsEditorOnlyPlugin ? FText::FromString(TEXT("Editor Only")) : FText::FromString(TEXT("All"));
 			SupportedPlatformsWidget->AddSlot()
 			.Padding(2.0f, 0.0f)
 			[
 				SNew(SBorder)
 				.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
 				.BorderBackgroundColor(PluginListViewHelpers::PlatformColours::Misc)
-				.ToolTipText(FText::FromString(TEXT("All")))
+				.ToolTipText(PlatformsLabel)
 				.HAlign(EHorizontalAlignment::HAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("All")))
+					.Text(PlatformsLabel)
 					.Font(FEditorStyle::GetFontStyle("PropertyWindow.BoldFont"))
 				]
 			];
@@ -275,6 +263,8 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 
 void SPluginInfoRow::OnPluginEnabledChanged(ECheckBoxState EnabledCheckBoxState)
 {
+	PluginDataItem->bEnabled = EnabledCheckBoxState == ECheckBoxState::Checked;
+
 	FText FailMessage;
 	if (IProjectManager::Get().SetPluginEnabled(PluginDataItem->PluginName, EnabledCheckBoxState == ECheckBoxState::Checked, FailMessage))
 	{
@@ -329,13 +319,6 @@ void SQuickPluginListView::SortList()
 			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->bEnabled; });
 		else if (ListSortMode == EColumnSortMode::Descending)
 			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return !A->bEnabled; });
-	}
-	else if (SortByColumn == PluginListViewHelpers::ListHeader_IsEnginePlugin)
-	{
-		if (ListSortMode == EColumnSortMode::Ascending)
-			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->bIsEnginePlugin; });
-		else if (ListSortMode == EColumnSortMode::Descending)
-			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return !A->bIsEnginePlugin; });
 	}
 	else if (SortByColumn == PluginListViewHelpers::ListHeader_PluginLocation)
 	{
