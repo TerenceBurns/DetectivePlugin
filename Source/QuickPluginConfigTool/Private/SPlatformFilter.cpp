@@ -6,12 +6,13 @@
 
 
 ///////////////////////////////////////////////////////////////////////
-// SPlatformListFilter
+// SPlatformFilterButton
 
 class SPlatformFilterButton
 	: public SCompoundWidget
 {
 public:
+	DECLARE_DELEGATE_TwoParams(FOnFilterToggled, EPlatformFilter, bool);
 
 	SLATE_BEGIN_ARGS(SPlatformFilterButton) 
 		: _PlatformStyleInfo()
@@ -19,6 +20,8 @@ public:
 
 		SLATE_DEFAULT_SLOT(FArguments, Content)
 		SLATE_ATTRIBUTE(FPlatformStyleInfo, PlatformStyleInfo)
+		
+		SLATE_EVENT(FOnFilterToggled, OnFilterToggled)
 	SLATE_END_ARGS()
 
 
@@ -51,6 +54,7 @@ private:
 	 */
 	void OnCheckStatusChanged(ECheckBoxState EnabledCheckBoxState)
 	{
+		OnFilterToggled.ExecuteIfBound(PlatformStyleInfo.Get().FilterId, EnabledCheckBoxState == ECheckBoxState::Checked);
 	}
 
 	/**
@@ -68,6 +72,9 @@ private:
 
 	//
 	TAttribute<FPlatformStyleInfo> PlatformStyleInfo;
+
+	//
+	FOnFilterToggled OnFilterToggled;
 };
 
 
@@ -85,12 +92,15 @@ void SPlatformListFilter::Construct(const FArguments& InArgs)
 	for (int32 i = 0; i < 5; i++)
 	{
 		Test.StyleColour = FColor(127, 30*i, 57);
+		Test.FilterId = (EPlatformFilter)i;
 		FilterHBox->AddSlot()
 		.Padding(4.0f)
 		.AutoWidth()
 		[
 			SNew(SPlatformFilterButton)
 			.PlatformStyleInfo(Test)
+			.OnFilterToggled(this, &SPlatformListFilter::OnFilterButtonToggled)
+			
 		];
 	}
 
@@ -106,6 +116,12 @@ void SPlatformListFilter::Construct(const FArguments& InArgs)
 
 
 SPlatformListFilter::~SPlatformListFilter()
+{
+
+}
+
+
+void SPlatformListFilter::OnFilterButtonToggled(EPlatformFilter Filter, bool bWasEnabled)
 {
 
 }
