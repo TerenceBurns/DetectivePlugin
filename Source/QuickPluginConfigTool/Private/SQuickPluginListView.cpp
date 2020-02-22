@@ -1,6 +1,7 @@
 // Copyright 2020 - Trifolium Digital Limited
 
 #include "SQuickPluginListView.h"
+#include "SPlatformFilter.h"
 #include "Interfaces/IPluginManager.h"
 #include "Interfaces/IProjectManager.h"
 
@@ -56,49 +57,58 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
-		SNew(SBorder)
-		.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
-		.Padding(4.0f)
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot()
+		.AutoHeight()
 		[
-			SAssignNew(PluginDetailsView, SListView<FPluginDataPtr>)
-			.ItemHeight(24)						
-			.ScrollbarVisibility(EVisibility::Visible)
-			.ListItemsSource(&FilteredPlugins)
-			.OnGenerateRow(this, &SQuickPluginListView::OnGenerateWidgetForList)
-			.HeaderRow
-			(
-				SNew(SHeaderRow)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_EnablePlugin)
-				.DefaultLabel(LOCTEXT("PluginEnableHeader", ""))
-				.DefaultTooltip(LOCTEXT("PluginEnableHeaderToolTip", "Enable for Project"))
-				.FixedWidth(PluginListViewHelpers::ListHeader_EnablePlugin_FixedWidth)
-				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_EnablePlugin)
-				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginName)
-				.DefaultLabel(LOCTEXT("PluginNameHeader", "Plugin Name"))
-				.FillWidth(PluginListViewHelpers::ListHeader_PluginName_Ratio)
-				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginName)
-				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_Developer)
-				.DefaultLabel(LOCTEXT("PluginDeveloperHeader", "Developer"))
-				.FillWidth(PluginListViewHelpers::ListHeader_Developer_Ratio)
-				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_Developer)
-				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_EnabledByDefault)
-				.DefaultLabel(LOCTEXT("PluginEnabledByDefaultHeader", "Enabled By Default?"))
-				.FillWidth(PluginListViewHelpers::ListHeader_EnabledByDefault_Ratio)
-				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_EnabledByDefault)
-				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_SupportedPlatforms)
-				.DefaultLabel(LOCTEXT("PluginSupportedPlatformsHeader", "Supported Platforms"))
-				.FillWidth(PluginListViewHelpers::ListHeader_SupportedPlatforms_Ratio)
-				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
-				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
-				.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
-				.FillWidth(PluginListViewHelpers::ListHeader_PluginLocation_Ratio)
-				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginLocation)
-				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
-			)
+			SNew(SPlatformListFilter)
+		]
+		+ SVerticalBox::Slot()
+		[
+			SNew(SBorder)
+			.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+			.Padding(4.0f)
+			[
+				SAssignNew(PluginDetailsView, SListView<FPluginDataPtr>)
+				.ItemHeight(24)						
+				.ScrollbarVisibility(EVisibility::Visible)
+				.ListItemsSource(&FilteredPlugins)
+				.OnGenerateRow(this, &SQuickPluginListView::OnGenerateWidgetForList)
+				.HeaderRow
+				(
+					SNew(SHeaderRow)
+					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_EnablePlugin)
+					.DefaultLabel(LOCTEXT("PluginEnableHeader", ""))
+					.DefaultTooltip(LOCTEXT("PluginEnableHeaderToolTip", "Enable for Project"))
+					.FixedWidth(PluginListViewHelpers::ListHeader_EnablePlugin_FixedWidth)
+					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_EnablePlugin)
+					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginName)
+					.DefaultLabel(LOCTEXT("PluginNameHeader", "Plugin Name"))
+					.FillWidth(PluginListViewHelpers::ListHeader_PluginName_Ratio)
+					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginName)
+					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_Developer)
+					.DefaultLabel(LOCTEXT("PluginDeveloperHeader", "Developer"))
+					.FillWidth(PluginListViewHelpers::ListHeader_Developer_Ratio)
+					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_Developer)
+					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_EnabledByDefault)
+					.DefaultLabel(LOCTEXT("PluginEnabledByDefaultHeader", "Enabled By Default?"))
+					.FillWidth(PluginListViewHelpers::ListHeader_EnabledByDefault_Ratio)
+					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_EnabledByDefault)
+					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_SupportedPlatforms)
+					.DefaultLabel(LOCTEXT("PluginSupportedPlatformsHeader", "Supported Platforms"))
+					.FillWidth(PluginListViewHelpers::ListHeader_SupportedPlatforms_Ratio)
+					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
+					.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
+					.FillWidth(PluginListViewHelpers::ListHeader_PluginLocation_Ratio)
+					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginLocation)
+					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+				)
+			]
 		]
 	];
 }
