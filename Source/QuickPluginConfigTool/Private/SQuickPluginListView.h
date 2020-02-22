@@ -36,6 +36,9 @@ struct FPluginData
 
 	//
 	FString Developer;
+
+	// 
+	TArray<FString> SupportedPlatforms;
 };
 
 typedef TSharedPtr<FPluginData> FPluginDataPtr;

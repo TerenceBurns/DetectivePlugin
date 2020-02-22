@@ -20,11 +20,14 @@ namespace PluginListViewHelpers
 	static FName ListHeader_IsEnginePlugin("IsEnginePlugin");
 	const float ListHeader_IsEnginePlugin_Ratio = 1.0f / 5.0f;
 
-	static FName ListHeader_PluginLocation("PluginLocation");
-	const float ListHeader_PluginLocation_Ratio = 3.0f / 5.0f;
-
 	static FName ListHeader_Developer("Developer");
 	const float ListHeader_Developer_Ratio = 1.0f / 5.0f;
+
+	static FName ListHeader_SupportedPlatforms("SupportedPlatforms");
+	const float ListHeader_SupportedPlatforms_Ratio = 1.0f / 5.0f;
+
+	static FName ListHeader_PluginLocation("PluginLocation");
+	const float ListHeader_PluginLocation_Ratio = 3.0f / 5.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -69,6 +72,9 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 				.FillWidth(PluginListViewHelpers::ListHeader_EnabledByDefault_Ratio)
 				.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_EnabledByDefault)
 				.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_SupportedPlatforms)
+				.DefaultLabel(LOCTEXT("PluginSupportedPlatformsHeader", "Supported Platforms"))
+				.FillWidth(PluginListViewHelpers::ListHeader_SupportedPlatforms_Ratio)
 				+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_IsEnginePlugin)
 				.DefaultLabel(LOCTEXT("PluginIsEnginePluginHeader", "Is Engine Plugin?"))
 				.FillWidth(PluginListViewHelpers::ListHeader_IsEnginePlugin_Ratio)
@@ -100,6 +106,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		PluginInfo->bEnabled = Plugin->IsEnabled();
 		PluginInfo->bIsEnginePlugin = Plugin->GetType() == EPluginType::Engine;
 		PluginInfo->Developer = Plugin->GetDescriptor().CreatedBy;
+		PluginInfo->SupportedPlatforms = Plugin->GetDescriptor().SupportedTargetPlatforms;
 
 		AllPlugins.Add(PluginInfo);
 		FilteredPlugins.Add(PluginInfo);
@@ -112,6 +119,25 @@ TSharedRef<ITableRow> SQuickPluginListView::OnGenerateWidgetForList(FPluginDataP
 {
 	return SNew(SPluginInfoRow, OwnerTable)
 			.PluginDataItem(InItem);
+}
+
+
+FColor GetBorderColourForPlatform(const FString& InPlatformName)
+{
+	FColor BGColour;
+	if (InPlatformName == TEXT("PS4"))
+	{
+		BGColour = FColor(0, 55, 145);
+	}
+	else if (InPlatformName == TEXT("XboxOne"))
+	{
+		BGColour = FColor(14, 122, 13);
+	}
+	else
+	{
+		BGColour = FColor(127, 127, 127);
+	}
+	return BGColour;
 }
 
 
@@ -165,6 +191,44 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 		ColumnWidget = SNew(STextBlock)
 			.Text(FText::FromString(PluginDataItem->Developer))
 			.ColorAndOpacity(FSlateColor::UseSubduedForeground());
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_SupportedPlatforms)
+	{
+		TSharedPtr<SHorizontalBox> SupportedPlatformsWidget = SNew(SHorizontalBox);
+		if (PluginDataItem->SupportedPlatforms.Num() == 0)
+		{
+			SupportedPlatformsWidget->AddSlot()
+			.AutoWidth()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(TEXT("All")))
+				.ColorAndOpacity(FSlateColor::UseSubduedForeground())
+				.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+			];
+		}
+		else
+		{
+			for (auto& SupportedPlatformStr : PluginDataItem->SupportedPlatforms)
+			{
+				FColor BGColour = GetBorderColourForPlatform(SupportedPlatformStr);
+				SupportedPlatformsWidget->AddSlot()
+				.AutoWidth()
+				.Padding(2.0f, 0.0f)
+				[
+					SNew(SBorder)
+					.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
+					.BorderBackgroundColor(BGColour)
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(SupportedPlatformStr))
+						.ColorAndOpacity(FSlateColor::UseSubduedForeground())
+						.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					]
+				];
+			}
+		}
+
+		ColumnWidget = SupportedPlatformsWidget;
 	}
 	else
 	{
