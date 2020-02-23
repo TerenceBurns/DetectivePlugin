@@ -46,6 +46,7 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 		[
 			SNew(SPlatformListFilter)
 			.OnPluginPlatformFilterChanged(this, &SQuickPluginListView::OnPlatformFilterChanged)
+			.PlatformsExplicitlySupported(FoundPlatforms)
 		]
 		+ SVerticalBox::Slot()
 		[
