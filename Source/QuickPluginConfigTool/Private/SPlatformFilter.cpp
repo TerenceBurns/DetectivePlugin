@@ -14,34 +14,19 @@ class SPlatformFilterButton
 public:
 	DECLARE_DELEGATE_TwoParams(FOnFilterToggled, EPlatformFilter, bool);
 
-	SLATE_BEGIN_ARGS(SPlatformFilterButton) 
+	SLATE_BEGIN_ARGS(SPlatformFilterButton)
 		: _PlatformStyleInfo()
 		{}
 
 		SLATE_DEFAULT_SLOT(FArguments, Content)
-		SLATE_ATTRIBUTE(FPlatformStyleInfo, PlatformStyleInfo)
-		
+		SLATE_ARGUMENT(TSharedPtr<FPlatformStyleInfo>, PlatformStyleInfo)
+
 		SLATE_EVENT(FOnFilterToggled, OnFilterToggled)
 	SLATE_END_ARGS()
 
 
 	/** Constructs this widget with InArgs */
-	void Construct(const FArguments& InArgs)
-	{
-		PlatformStyleInfo = InArgs._PlatformStyleInfo;
-		ChildSlot
-		[
-			SAssignNew(FilterCheckItem, SCheckBox)
-			.Style(FEditorStyle::Get(), "ContentBrowser.FilterButton")
-			.OnCheckStateChanged(this, &SPlatformFilterButton::OnCheckStatusChanged)
-			.ForegroundColor(this, &SPlatformFilterButton::GetFilterForegroundColor)
-			.IsChecked(ECheckBoxState::Checked)
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString(PlatformStyleInfo.Get().PlatformName))
-			]
-		];
-	}
+	void Construct(const FArguments& InArgs);
 
 	/** Destructor */
 	~SPlatformFilterButton() {}
@@ -52,18 +37,12 @@ private:
 	/** 
 	 *
 	 */
-	void OnCheckStatusChanged(ECheckBoxState EnabledCheckBoxState)
-	{
-		OnFilterToggled.ExecuteIfBound(PlatformStyleInfo.Get().FilterId, EnabledCheckBoxState == ECheckBoxState::Checked);
-	}
+	void OnCheckStatusChanged(ECheckBoxState EnabledCheckBoxState);
 
 	/**
 	 *
 	 */
-	FSlateColor GetFilterForegroundColor() const
-	{
-		return FilterCheckItem->IsChecked() ? PlatformStyleInfo.Get().StyleColour : FLinearColor::White;
-	}
+	FSlateColor GetFilterForegroundColor() const;
 
 private:
 
@@ -71,11 +50,43 @@ private:
 	TSharedPtr<SCheckBox> FilterCheckItem;
 
 	//
-	TAttribute<FPlatformStyleInfo> PlatformStyleInfo;
+	TSharedPtr<FPlatformStyleInfo> PlatformStyleInfo;
 
 	//
 	FOnFilterToggled OnFilterToggled;
 };
+
+
+void SPlatformFilterButton::Construct(const FArguments& InArgs)
+{
+	PlatformStyleInfo = InArgs._PlatformStyleInfo;
+	OnFilterToggled = InArgs._OnFilterToggled;
+
+	ChildSlot
+	[
+		SAssignNew(FilterCheckItem, SCheckBox)
+		.Style(FEditorStyle::Get(), "ContentBrowser.FilterButton")
+		.OnCheckStateChanged(this, &SPlatformFilterButton::OnCheckStatusChanged)
+		.ForegroundColor(this, &SPlatformFilterButton::GetFilterForegroundColor)
+		.IsChecked(ECheckBoxState::Checked)
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString(PlatformStyleInfo->PlatformName))
+		]
+	];
+}
+
+
+void SPlatformFilterButton::OnCheckStatusChanged(ECheckBoxState EnabledCheckBoxState)
+{
+	OnFilterToggled.ExecuteIfBound(PlatformStyleInfo->FilterId, EnabledCheckBoxState == ECheckBoxState::Checked);
+}
+
+
+FSlateColor SPlatformFilterButton::GetFilterForegroundColor() const
+{
+	return FilterCheckItem->IsChecked() ? PlatformStyleInfo->StyleColour : FLinearColor::White;
+}
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -84,21 +95,19 @@ private:
 
 void SPlatformListFilter::Construct(const FArguments& InArgs)
 {
+	OnPluginPlatformFilterChanged = InArgs._OnPluginPlatformFilterChanged;
+	PlatformsExplicitlySupported = InArgs._PlatformsExplicitlySupported;
+	
 	FilterHBox = SNew(SHorizontalBox);
 
-	FPlatformStyleInfo Test;
-	Test.PlatformName = TEXT("PlayBox1");
-
-	for (int32 i = 0; i < 5; i++)
+	for (auto& SupportedPlatform : PlatformStyleInfo::AllStyleInfo)
 	{
-		Test.StyleColour = FColor(127, 30*i, 57);
-		Test.FilterId = (EPlatformFilter)i;
 		FilterHBox->AddSlot()
 		.Padding(4.0f)
 		.AutoWidth()
 		[
 			SNew(SPlatformFilterButton)
-			.PlatformStyleInfo(Test)
+			.PlatformStyleInfo(SupportedPlatform)
 			.OnFilterToggled(this, &SPlatformListFilter::OnFilterButtonToggled)
 			
 		];
@@ -120,10 +129,15 @@ SPlatformListFilter::~SPlatformListFilter()
 
 }
 
-
 void SPlatformListFilter::OnFilterButtonToggled(EPlatformFilter Filter, bool bWasEnabled)
 {
+	if (bWasEnabled)
+		CurrentFilter |= Filter;
+	else
+		CurrentFilter = CurrentFilter & ~Filter;
 
+	OnPluginPlatformFilterChanged.ExecuteIfBound(CurrentFilter);
 }
+
 
 #undef LOCTEXT_NAMESPACE

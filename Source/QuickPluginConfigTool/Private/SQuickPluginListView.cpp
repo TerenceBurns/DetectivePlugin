@@ -4,6 +4,7 @@
 #include "SPlatformFilter.h"
 #include "Interfaces/IPluginManager.h"
 #include "Interfaces/IProjectManager.h"
+#include "SPlatformFilter.h"
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
 
@@ -26,26 +27,6 @@ namespace PluginListViewHelpers
 
 	static FName ListHeader_PluginLocation("PluginLocation");
 	const float ListHeader_PluginLocation_Ratio = 3.0f / 5.0f;
-
-	namespace PlatformColours
-	{
-		static FColor Windows = FColor(177, 70, 194);
-		static FColor Mac = FColor(0, 125, 221);
-		static FColor Linux = FColor(0, 0, 0);
-
-		static FColor PS4 = FColor(0, 55, 145);
-		static FColor XboxOne = FColor(14, 122, 13);
-		static FColor Switch = FColor(230, 0, 18);
-		
-		static FColor Android = FColor(13, 175, 84);
-		static FColor IOS = FColor(0, 120, 215);
-
-		static FColor Lumin = FColor(241, 39, 66);
-		static FColor HoloLens = FColor(140, 38, 122);
-
-		static FColor All = FColor(75, 75, 75);
-		static FColor Misc = FColor(127, 127, 127);
-	}
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -54,6 +35,8 @@ namespace PluginListViewHelpers
 void SQuickPluginListView::Construct(const FArguments& InArgs)
 {
 	PopulatePluginsAvailable();
+	SortByColumn = PluginListViewHelpers::ListHeader_PluginName;
+	ListSortMode = EColumnSortMode::Ascending;
 
 	ChildSlot
 	[
@@ -62,6 +45,7 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 		.AutoHeight()
 		[
 			SNew(SPlatformListFilter)
+			.OnPluginPlatformFilterChanged(this, &SQuickPluginListView::OnPlatformFilterChanged)
 		]
 		+ SVerticalBox::Slot()
 		[
@@ -119,6 +103,7 @@ SQuickPluginListView::~SQuickPluginListView()
 
 }
 
+
 void SQuickPluginListView::PopulatePluginsAvailable()
 {
 	for (const TSharedRef<IPlugin>& Plugin : IPluginManager::Get().GetDiscoveredPlugins())
@@ -129,6 +114,11 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		PluginInfo->bEnabled = Plugin->IsEnabled();
 		PluginInfo->Developer = Plugin->GetDescriptor().CreatedBy;
 		PluginInfo->SupportedPlatforms = Plugin->GetDescriptor().SupportedTargetPlatforms;
+
+		for (const FString& FoundPlatform : PluginInfo->SupportedPlatforms)
+		{
+			FoundPlatforms.AddUnique(FoundPlatform);
+		}
 
 		for (const FModuleDescriptor& Module : Plugin->GetDescriptor().Modules)
 		{
@@ -142,37 +132,11 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 	FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginName < B->PluginName; });
 }
 
+
 TSharedRef<ITableRow> SQuickPluginListView::OnGenerateWidgetForList(FPluginDataPtr InItem, const TSharedRef<STableViewBase> &OwnerTable)
 {
 	return SNew(SPluginInfoRow, OwnerTable)
 			.PluginDataItem(InItem);
-}
-
-
-FColor GetBorderColourForPlatform(const FString& InPlatformName)
-{
-	if (InPlatformName == TEXT("Win32") || InPlatformName == TEXT("Win64"))
-		return PluginListViewHelpers::PlatformColours::Windows;
-	else if (InPlatformName == TEXT("Mac"))
-		return PluginListViewHelpers::PlatformColours::Mac;
-	else if (InPlatformName == TEXT("Linux"))
-		return PluginListViewHelpers::PlatformColours::Linux;
-	else if (InPlatformName == TEXT("PS4"))
-		return PluginListViewHelpers::PlatformColours::PS4;
-	else if (InPlatformName == TEXT("XboxOne"))
-		return PluginListViewHelpers::PlatformColours::XboxOne;
-	else if (InPlatformName == TEXT("Switch"))
-		return PluginListViewHelpers::PlatformColours::Switch;
-	else if (InPlatformName == TEXT("Android"))
-		return PluginListViewHelpers::PlatformColours::Android;
-	else if (InPlatformName == TEXT("IOS") || InPlatformName == TEXT("TVOS"))
-		return PluginListViewHelpers::PlatformColours::IOS;
-	else if (InPlatformName == TEXT("Lumin"))
-		return PluginListViewHelpers::PlatformColours::Lumin;
-	else if (InPlatformName == TEXT("HoloLens"))
-		return PluginListViewHelpers::PlatformColours::HoloLens;
-	else
-		return PluginListViewHelpers::PlatformColours::Misc;
 }
 
 
@@ -228,7 +192,7 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 			[
 				SNew(SBorder)
 				.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
-				.BorderBackgroundColor(PluginListViewHelpers::PlatformColours::Misc)
+				.BorderBackgroundColor(PlatformColours::Others)
 				.ToolTipText(PlatformsLabel)
 				.HAlign(EHorizontalAlignment::HAlign_Center)
 				[
@@ -299,12 +263,14 @@ EColumnSortMode::Type SQuickPluginListView::GetColumnSortMode(const FName InColu
 	return InColumnName == SortByColumn ? ListSortMode : EColumnSortMode::None;
 }
 
+
 void SQuickPluginListView::OnColumnSortModeChanged(const EColumnSortPriority::Type SortPriority, const FName& InColumnName, const EColumnSortMode::Type InSortMode)
 {
 	SortByColumn = InColumnName;
 	ListSortMode = InSortMode;
 	SortList();
 }
+
 
 void SQuickPluginListView::SortList()
 {
@@ -347,5 +313,37 @@ void SQuickPluginListView::SortList()
 
 	PluginDetailsView->RequestListRefresh();
 }
+
+
+void SQuickPluginListView::OnPlatformFilterChanged(EPlatformFilter NewFilter)
+{
+	FilteredPlugins.Empty();
+	if (NewFilter != EPlatformFilter::None)
+	{		
+		TArray<FString> FilteredPlatformIds = PlatformFilterToPlatformIdStrings(NewFilter);
+		for (FPluginDataPtr NextPlugin : AllPlugins)
+		{
+			if (NextPlugin->SupportedPlatforms.Num() == 0)
+			{
+				FilteredPlugins.Add(NextPlugin);
+			}
+			else
+			{
+				for (const FString& FilteredPlatform : FilteredPlatformIds)
+				{
+					if (NextPlugin->SupportedPlatforms.Contains(FilteredPlatform))
+					{
+						FilteredPlugins.Add(NextPlugin);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	SortList();
+	PluginDetailsView->RequestListRefresh();
+}
+
 
 #undef LOCTEXT_NAMESPACE

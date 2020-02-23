@@ -8,6 +8,7 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Views/SHeaderRow.h"
 #include "SlateOptMacros.h"
+#include "PluginPlatformHelpers.h"
 
 
 /**
@@ -113,6 +114,9 @@ private:
 	/** */
 	void OnColumnSortModeChanged(const EColumnSortPriority::Type SortPriority, const FName& InColumnName, const EColumnSortMode::Type InSortMode);
 
+	/** */
+	void OnPlatformFilterChanged(EPlatformFilter NewFilter);
+
 private:
 	// Access to the list view of represented plugins.
 	TSharedPtr<class SListView<FPluginDataPtr>> PluginDetailsView;
@@ -128,4 +132,7 @@ private:
 
 	//
 	FName SortByColumn;
+
+	//
+	TArray<FString> FoundPlatforms;
 };
