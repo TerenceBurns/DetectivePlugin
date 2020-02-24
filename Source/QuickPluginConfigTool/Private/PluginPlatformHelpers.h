@@ -30,6 +30,7 @@ namespace PlatformColours
 
 	static FColor Mac = FColor(0, 125, 221);
 	static FColor Linux = FColor(0, 0, 0);
+	static FColor LinuxAArch64 = FColor(17, 17, 17);
 
 	static FColor PS4 = FColor(0, 55, 145);
 	static FColor XboxOne = FColor(14, 122, 13);
@@ -52,27 +53,28 @@ namespace PlatformColours
  */
 enum class EPlatformFilter : uint32
 {
-	None =		0,
-	Win64 =		1 << 0,
-	Win32 =		1 << 1,
+	None =			0,
+	Win64 =			1 << 0,
+	Win32 =			1 << 1,
 
-	Mac =		1 << 2,
-	Linux =		1 << 3,
+	Mac =			1 << 2,
+	Linux =			1 << 3,
+	LinuxAArch64 =	1 << 4,
 
-	PS4 =		1 << 4,
-	XboxOne =	1 << 5,
-	Switch =	1 << 6,
+	PS4 =			1 << 5,
+	XboxOne =		1 << 6,
+	Switch =		1 << 7,
 	
-	Android =	1 << 7,
-	IOS =		1 << 8,
-	TVOS =		1 << 9,
+	Android =		1 << 8,
+	IOS =			1 << 9,
+	TVOS =			1 << 10,
 
-	Lumin =		1 << 10,
-	HoloLens =	1 << 11,
+	Lumin =			1 << 11,
+	HoloLens =		1 << 12,
 
-	Others =	1 << 12,
+	Others =		1 << 13,
 
-	All = Win64 | Win32 | Mac | Linux | PS4 | XboxOne | Switch | Android | IOS | TVOS | Lumin | HoloLens | Others
+	All = Win64 | Win32 | Mac | Linux | LinuxAArch64 | PS4 | XboxOne | Switch | Android | IOS | TVOS | Lumin | HoloLens | Others
 };
 ENUM_CLASS_FLAGS(EPlatformFilter);
 
@@ -99,6 +101,7 @@ namespace PlatformStyleInfo
 	static TSharedPtr<FPlatformStyleInfo> Win32StyleInfo = MakeShareable(new FPlatformStyleInfo(TEXT("Win32"), PlatformColours::Win32, EPlatformFilter::Win32));
 	static TSharedPtr<FPlatformStyleInfo> MacStyleInfo = MakeShareable(new FPlatformStyleInfo(TEXT("Mac"), PlatformColours::Mac, EPlatformFilter::Mac));
 	static TSharedPtr<FPlatformStyleInfo> LinuxStyleInfo = MakeShareable(new FPlatformStyleInfo(TEXT("Linux"), PlatformColours::Linux, EPlatformFilter::Linux));
+	static TSharedPtr<FPlatformStyleInfo> LinuxAArch64StyleInfo = MakeShareable(new FPlatformStyleInfo(TEXT("LinuxAArch64"), PlatformColours::LinuxAArch64, EPlatformFilter::LinuxAArch64));
 	static TSharedPtr<FPlatformStyleInfo> PS4StyleInfo = MakeShareable(new FPlatformStyleInfo(TEXT("PS4"), PlatformColours::PS4, EPlatformFilter::PS4));
 	static TSharedPtr<FPlatformStyleInfo> XboxOneStyleInfo = MakeShareable(new FPlatformStyleInfo(TEXT("XboxOne"), PlatformColours::XboxOne, EPlatformFilter::XboxOne));
 	static TSharedPtr<FPlatformStyleInfo> SwitchStyleInfo = MakeShareable(new FPlatformStyleInfo(TEXT("Switch"), PlatformColours::Switch, EPlatformFilter::Switch));
@@ -115,6 +118,7 @@ namespace PlatformStyleInfo
 		Win32StyleInfo,
 		MacStyleInfo,
 		LinuxStyleInfo,
+		LinuxAArch64StyleInfo,
 		PS4StyleInfo,
 		XboxOneStyleInfo,
 		SwitchStyleInfo,
@@ -137,6 +141,8 @@ FColor GetBorderColourForPlatform(const FString& InPlatformName)
 		return PlatformColours::Mac;
 	else if (InPlatformName == TEXT("Linux"))
 		return PlatformColours::Linux;
+	else if (InPlatformName == TEXT("LinuxAArch64"))
+		return PlatformColours::LinuxAArch64;
 	else if (InPlatformName == TEXT("PS4"))
 		return PlatformColours::PS4;
 	else if (InPlatformName == TEXT("XboxOne"))
@@ -167,6 +173,10 @@ TArray<FString> PlatformFilterToPlatformIdStrings(EPlatformFilter NewFilter)
 		PlatformIdStrings.Add(TEXT("Win32"));
 	if (!!(NewFilter & EPlatformFilter::Mac))
 		PlatformIdStrings.Add(TEXT("Mac"));
+	if (!!(NewFilter & EPlatformFilter::Linux))
+		PlatformIdStrings.Add(TEXT("Linux"));
+	if (!!(NewFilter & EPlatformFilter::LinuxAArch64))
+		PlatformIdStrings.Add(TEXT("LinuxAArch64"));
 	if (!!(NewFilter & EPlatformFilter::PS4))
 		PlatformIdStrings.Add(TEXT("PS4"));
 	if (!!(NewFilter & EPlatformFilter::XboxOne))
@@ -200,6 +210,8 @@ EPlatformFilter PlatformIdStringsToFilterId(const FString InPlatformId)
 		return EPlatformFilter::Mac;
 	else if(InPlatformId == TEXT("Linux"))
 		return EPlatformFilter::Linux;
+	else if (InPlatformId == TEXT("LinuxAArch64"))
+		return EPlatformFilter::LinuxAArch64;
 	else if(InPlatformId == TEXT("PS4"))
 		return EPlatformFilter::PS4;
 	else if(InPlatformId == TEXT("XboxOne"))
