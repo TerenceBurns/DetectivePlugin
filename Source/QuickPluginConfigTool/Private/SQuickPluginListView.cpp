@@ -5,6 +5,8 @@
 #include "Interfaces/IPluginManager.h"
 #include "Interfaces/IProjectManager.h"
 #include "SPlatformFilter.h"
+#include "Interfaces/ITargetPlatform.h"
+#include "Interfaces/ITargetPlatformManagerModule.h"
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
 
@@ -114,6 +116,12 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		PluginInfo->bIsEnabledByDefault = Plugin->IsEnabledByDefault();
 		PluginInfo->bEnabled = Plugin->IsEnabled();
 		PluginInfo->Developer = Plugin->GetDescriptor().CreatedBy;
+
+		for (const FModuleDescriptor& Module : Plugin->GetDescriptor().Modules)
+		{
+			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
+		}
+
 		PluginInfo->SupportedPlatforms = Plugin->GetDescriptor().SupportedTargetPlatforms;
 
 		// Check the modules for specific platforms.
@@ -135,18 +143,29 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 
 		}
 
-		for (const FString& FoundPlatform : PluginInfo->SupportedPlatforms)
+		// Create info for all found platforms.
 		{
-			FoundPlatforms.AddUnique(FoundPlatform);
+			for (const FString& FoundPlatform : PluginInfo->SupportedPlatforms)
+			{
+				FoundPlatforms.AddUnique(FoundPlatform);
+			}
 		}
 
-		for (const FModuleDescriptor& Module : Plugin->GetDescriptor().Modules)
-		{
-			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
-		}
 
 		AllPlugins.Add(PluginInfo);
 		FilteredPlugins.Add(PluginInfo);
+	}
+
+	// Now that we have processed all pluginss, let's fixup any platforms.
+	for (FPluginDataPtr PluginInfo : AllPlugins)
+	{
+		// Finally check if the platform does support all.
+		if (PluginInfo->SupportedPlatforms.Num() == 0 && !PluginInfo->bIsEditorOnlyPlugin)
+		{
+			PluginInfo->SupportedPlatforms.Append(FoundPlatforms);
+			PluginInfo->SupportedPlatforms.Add(TEXT("Others"));
+		}
+		PluginInfo->SupportedPlatforms.Sort([](const FString& Lhs, const FString& Rhs) { return PlatformIdStringsToFilterId(Lhs) < PlatformIdStringsToFilterId(Rhs); });
 	}
 
 	FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginName < B->PluginName; });

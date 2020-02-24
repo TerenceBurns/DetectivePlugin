@@ -188,3 +188,34 @@ TArray<FString> PlatformFilterToPlatformIdStrings(EPlatformFilter NewFilter)
 
 	return PlatformIdStrings;
 }
+
+
+EPlatformFilter PlatformIdStringsToFilterId(const FString InPlatformId)
+{
+	if (InPlatformId == TEXT("Win64"))
+		return EPlatformFilter::Win64;
+	else if(InPlatformId == TEXT("Win32"))
+		return EPlatformFilter::Win32;
+	else if(InPlatformId == TEXT("Mac"))
+		return EPlatformFilter::Mac;
+	else if(InPlatformId == TEXT("Linux"))
+		return EPlatformFilter::Linux;
+	else if(InPlatformId == TEXT("PS4"))
+		return EPlatformFilter::PS4;
+	else if(InPlatformId == TEXT("XboxOne"))
+		return EPlatformFilter::XboxOne;
+	else if(InPlatformId == TEXT("Switch"))
+		return EPlatformFilter::Switch;
+	else if(InPlatformId == TEXT("Android"))
+		return EPlatformFilter::Android;
+	else if(InPlatformId == TEXT("IOS"))
+		return EPlatformFilter::IOS;
+	else if(InPlatformId == TEXT("TVOS"))
+		return EPlatformFilter::TVOS;
+	else if(InPlatformId == TEXT("Lumin"))
+		return EPlatformFilter::Lumin;
+	else if(InPlatformId == TEXT("HoloLens"))
+		return EPlatformFilter::HoloLens;
+	else
+		return EPlatformFilter::Others;
+}
