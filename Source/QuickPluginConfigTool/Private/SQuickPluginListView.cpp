@@ -116,6 +116,27 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		PluginInfo->Developer = Plugin->GetDescriptor().CreatedBy;
 		PluginInfo->SupportedPlatforms = Plugin->GetDescriptor().SupportedTargetPlatforms;
 
+		// Check the modules for specific platforms.
+		if (PluginInfo->SupportedPlatforms.Num() == 0)
+		{
+			bool bAnyModuleSupportsAllPlatforms = true;
+			for (const FModuleDescriptor& PluginModule : Plugin->GetDescriptor().Modules)
+			{
+				bAnyModuleSupportsAllPlatforms &= PluginModule.WhitelistPlatforms.Num() == 0;
+				if (bAnyModuleSupportsAllPlatforms)
+				{
+					PluginInfo->SupportedPlatforms.Empty();
+					break;
+				}
+
+				for (const FString& WhitelistedPlatform : PluginModule.WhitelistPlatforms)
+				{
+					PluginInfo->SupportedPlatforms.AddUnique(WhitelistedPlatform);
+				}
+			}
+
+		}
+
 		for (const FString& FoundPlatform : PluginInfo->SupportedPlatforms)
 		{
 			FoundPlatforms.AddUnique(FoundPlatform);
