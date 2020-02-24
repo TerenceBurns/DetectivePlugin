@@ -119,11 +119,9 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		// Check the modules for specific platforms.
 		if (PluginInfo->SupportedPlatforms.Num() == 0)
 		{
-			bool bAnyModuleSupportsAllPlatforms = true;
 			for (const FModuleDescriptor& PluginModule : Plugin->GetDescriptor().Modules)
 			{
-				bAnyModuleSupportsAllPlatforms &= PluginModule.WhitelistPlatforms.Num() == 0;
-				if (bAnyModuleSupportsAllPlatforms)
+				if (PluginModule.WhitelistPlatforms.Num() == 0)
 				{
 					PluginInfo->SupportedPlatforms.Empty();
 					break;
