@@ -225,7 +225,7 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 		TSharedPtr<SHorizontalBox> SupportedPlatformsWidget = SNew(SHorizontalBox);
 		if (PluginDataItem->SupportedPlatforms.Num() == 0)
 		{
-			FText PlatformsLabel = PluginDataItem->bIsEditorOnlyPlugin ? FText::FromString(TEXT("Editor Only")) : FText::FromString(TEXT("All"));
+			FText PlatformsLabel = PluginDataItem->bIsEditorOnlyPlugin ? LOCTEXT("EditorOnlyLabel", "Editor Only") : LOCTEXT("AllPlatformsLabel", "All");
 			SupportedPlatformsWidget->AddSlot()
 			.Padding(2.0f, 0.0f)
 			[

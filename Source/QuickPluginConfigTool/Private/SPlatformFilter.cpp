@@ -62,6 +62,8 @@ void SPlatformFilterButton::Construct(const FArguments& InArgs)
 	PlatformStyleInfo = InArgs._PlatformStyleInfo;
 	OnFilterToggled = InArgs._OnFilterToggled;
 
+	FText PlatformLabel = PlatformStyleInfo->FilterId != EPlatformFilter::Editor_Only ? FText::FromString(PlatformStyleInfo->PlatformName) : LOCTEXT("EditorOnlyLabel", "Editor Only");
+
 	ChildSlot
 	[
 		SAssignNew(FilterCheckItem, SCheckBox)
@@ -71,7 +73,7 @@ void SPlatformFilterButton::Construct(const FArguments& InArgs)
 		.IsChecked(ECheckBoxState::Checked)
 		[
 			SNew(STextBlock)
-			.Text(FText::FromString(PlatformStyleInfo->PlatformName))
+			.Text(PlatformLabel)
 		]
 	];
 }
@@ -124,8 +126,15 @@ void SPlatformListFilter::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
-		SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot()
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT("PlatformFilterLabel", "Filter Plugins:"))
+			.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+		]
+		+ SVerticalBox::Slot()
 		[
 			FilterHBox.ToSharedRef()
 		]
