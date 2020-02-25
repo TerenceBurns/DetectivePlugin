@@ -109,9 +109,18 @@ void SPlatformListFilter::Construct(const FArguments& InArgs)
 			SNew(SPlatformFilterButton)
 			.PlatformStyleInfo(SupportedPlatform)
 			.OnFilterToggled(this, &SPlatformListFilter::OnFilterButtonToggled)
-			
 		];
 	}
+	
+	// Editor Only Filter
+	FilterHBox->AddSlot()
+	.Padding(4.0f)
+	.AutoWidth()
+	[
+		SNew(SPlatformFilterButton)
+		.PlatformStyleInfo(MakeShareable(new FPlatformStyleInfo(TEXT("Editor Only"), PlatformColours::Editor_Only, EPlatformFilter::Editor_Only)))
+		.OnFilterToggled(this, &SPlatformListFilter::OnFilterButtonToggled)
+	];
 
 	ChildSlot
 	[

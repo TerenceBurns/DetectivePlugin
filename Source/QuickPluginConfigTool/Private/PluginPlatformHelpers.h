@@ -44,6 +44,7 @@ namespace PlatformColours
 	static FColor HoloLens = FColor(140, 38, 122);
 
 	static FColor Others = FColor(127, 127, 127);
+	static FColor Editor_Only = FColor(255, 219, 88);
 
 	static FColor All = FColor(75, 75, 75);
 }
@@ -73,8 +74,9 @@ enum class EPlatformFilter : uint32
 	HoloLens =		1 << 12,
 
 	Others =		1 << 13,
+	Editor_Only =	1 << 14,
 
-	All = Win64 | Win32 | Mac | Linux | LinuxAArch64 | PS4 | XboxOne | Switch | Android | IOS | TVOS | Lumin | HoloLens | Others
+	All = Win64 | Win32 | Mac | Linux | LinuxAArch64 | PS4 | XboxOne | Switch | Android | IOS | TVOS | Lumin | HoloLens | Others | Editor_Only
 };
 ENUM_CLASS_FLAGS(EPlatformFilter);
 

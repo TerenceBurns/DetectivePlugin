@@ -125,7 +125,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		PluginInfo->SupportedPlatforms = Plugin->GetDescriptor().SupportedTargetPlatforms;
 
 		// Check the modules for specific platforms.
-		if (PluginInfo->SupportedPlatforms.Num() == 0)
+		if (PluginInfo->SupportedPlatforms.Num() == 0 && !PluginInfo->bIsEditorOnlyPlugin)
 		{
 			for (const FModuleDescriptor& PluginModule : Plugin->GetDescriptor().Modules)
 			{
@@ -156,7 +156,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		FilteredPlugins.Add(PluginInfo);
 	}
 
-	// Now that we have processed all pluginss, let's fixup any platforms.
+	// Now that we have processed all plugins, let's fixup any platforms.
 	for (FPluginDataPtr PluginInfo : AllPlugins)
 	{
 		// Finally check if the platform does support all.
@@ -231,13 +231,14 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 			[
 				SNew(SBorder)
 				.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
-				.BorderBackgroundColor(PlatformColours::Others)
+				.BorderBackgroundColor(PluginDataItem->bIsEditorOnlyPlugin ? PlatformColours::Editor_Only : PlatformColours::Others)
 				.ToolTipText(PlatformsLabel)
 				.HAlign(EHorizontalAlignment::HAlign_Center)
 				[
 					SNew(STextBlock)
 					.Text(PlatformsLabel)
-					.Font(FEditorStyle::GetFontStyle("PropertyWindow.BoldFont"))
+					.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					.ColorAndOpacity(!PluginDataItem->bIsEditorOnlyPlugin ? FLinearColor::White : FLinearColor::Black)
 				]
 			];
 		}
@@ -353,13 +354,12 @@ void SQuickPluginListView::SortList()
 	PluginDetailsView->RequestListRefresh();
 }
 
-
+#pragma optimize("", off)
 void SQuickPluginListView::OnPlatformFilterChanged(EPlatformFilter NewFilter)
 {
 	FilteredPlugins.Empty();
 	if (NewFilter != EPlatformFilter::None)
-	{		
-		TArray<FString> FilteredPlatformIds = PlatformFilterToPlatformIdStrings(NewFilter);
+	{
 		for (FPluginDataPtr NextPlugin : AllPlugins)
 		{
 			if (NextPlugin->SupportedPlatforms.Num() == 0)
@@ -368,6 +368,7 @@ void SQuickPluginListView::OnPlatformFilterChanged(EPlatformFilter NewFilter)
 			}
 			else
 			{
+				TArray<FString> FilteredPlatformIds = PlatformFilterToPlatformIdStrings(NewFilter);
 				for (const FString& FilteredPlatform : FilteredPlatformIds)
 				{
 					if (NextPlugin->SupportedPlatforms.Contains(FilteredPlatform))
@@ -380,9 +381,16 @@ void SQuickPluginListView::OnPlatformFilterChanged(EPlatformFilter NewFilter)
 		}
 	}
 
+	// Apply the Editor Only Filter. Special case.
+	FilteredPlugins = FilteredPlugins.FilterByPredicate([NewFilter](FPluginDataPtr Plugin)
+		{
+			return Plugin->bIsEditorOnlyPlugin ? (!!(NewFilter & EPlatformFilter::Editor_Only) && Plugin->bIsEditorOnlyPlugin) : true;
+		});
+
 	SortList();
 	PluginDetailsView->RequestListRefresh();
 }
+#pragma optimize("", on)
 
 
 #undef LOCTEXT_NAMESPACE
