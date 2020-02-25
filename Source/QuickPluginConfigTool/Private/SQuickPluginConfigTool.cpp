@@ -27,13 +27,13 @@ void SQuickPluginConfigTool::Construct(const FArguments& InArgs)
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
+			[
+				SAssignNew(PluginDetailsView, SQuickPluginListView)			
+			]
+			+ SVerticalBox::Slot()
 			.AutoHeight()
 			[
 				SNew(SProjectFileInfo)
-			]
-			+ SVerticalBox::Slot()
-			[
-				SAssignNew(PluginDetailsView, SQuickPluginListView)			
 			]
 		]
 	];
