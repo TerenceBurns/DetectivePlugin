@@ -9,8 +9,7 @@
 
 namespace QuickPluginConfigToolViewConstants
 {
-	const float DefaultSelectionPanelRatio = 0.5f;
-	const float DefaultDetailEditorRatio = 1.0f - DefaultSelectionPanelRatio;
+	const double ProjectReadOnlyFlagPeriodicCheckTime = 1.0f;
 }
 
 
@@ -19,6 +18,8 @@ namespace QuickPluginConfigToolViewConstants
 
 void SQuickPluginConfigTool::Construct(const FArguments& InArgs)
 {
+	bLastProjectCheckWasReadOnly = IFileManager::Get().IsReadOnly(*FPaths::GetProjectFilePath());
+
 	ChildSlot
 	[
 		SNew(SBorder)
@@ -33,7 +34,7 @@ void SQuickPluginConfigTool::Construct(const FArguments& InArgs)
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			[
-				SNew(SProjectFileInfo)
+				SAssignNew(ProjectFileInfo, SProjectFileInfo)
 			]
 		]
 	];
@@ -43,6 +44,21 @@ void SQuickPluginConfigTool::Construct(const FArguments& InArgs)
 SQuickPluginConfigTool::~SQuickPluginConfigTool()
 {
 
+}
+
+
+void SQuickPluginConfigTool::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
+{
+	if (InCurrentTime - LastReadOnlyCheckTime >= QuickPluginConfigToolViewConstants::ProjectReadOnlyFlagPeriodicCheckTime)
+	{
+		if (IFileManager::Get().IsReadOnly(*FPaths::GetProjectFilePath()) != bLastProjectCheckWasReadOnly)
+		{
+			bLastProjectCheckWasReadOnly = !bLastProjectCheckWasReadOnly;
+			ProjectFileInfo->NotifyProjectFileWriteStatusChanged(bLastProjectCheckWasReadOnly);
+			PluginDetailsView->NotifyProjectFileWriteStatusChanged(bLastProjectCheckWasReadOnly);
+		}
+		LastReadOnlyCheckTime = InCurrentTime;
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

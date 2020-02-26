@@ -29,6 +29,9 @@ namespace PluginListViewHelpers
 
 	static FName ListHeader_PluginLocation("PluginLocation");
 	const float ListHeader_PluginLocation_Ratio = 3.0f / 5.0f;
+
+	static FName ListHeader_Dependencies("Dependencies");
+	const float ListHeader_Dependencies_Ratio = 3.0f / 5.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -89,15 +92,26 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 					.DefaultLabel(LOCTEXT("PluginSupportedPlatformsHeader", "Supported Platforms"))
 					.FillWidth(PluginListViewHelpers::ListHeader_SupportedPlatforms_Ratio)
 					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
-					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
-					.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
-					.FillWidth(PluginListViewHelpers::ListHeader_PluginLocation_Ratio)
-					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginLocation)
+//					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
+//					.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
+//					.FillWidth(PluginListViewHelpers::ListHeader_PluginLocation_Ratio)
+//					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginLocation)
+//					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
+					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_Dependencies)
+					.DefaultLabel(LOCTEXT("PluginDependencies", "Plugins That Depend On This Plugin"))
+					.FillWidth(PluginListViewHelpers::ListHeader_Dependencies_Ratio)
+					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_Dependencies)
 					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
 				)
 			]
 		]
 	];
+}
+
+
+void SQuickPluginListView::NotifyProjectFileWriteStatusChanged(bool bIsReadOnly)
+{
+	bIsProjectWritable = !bIsReadOnly;
 }
 
 
@@ -120,6 +134,11 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		for (const FModuleDescriptor& Module : Plugin->GetDescriptor().Modules)
 		{
 			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
+		}
+
+		for (const FPluginReferenceDescriptor& Dependency : Plugin->GetDescriptor().Plugins)
+		{
+			PluginInfo->Dependencies.Add(Dependency.Name);
 		}
 
 		PluginInfo->SupportedPlatforms = Plugin->GetDescriptor().SupportedTargetPlatforms;
@@ -156,7 +175,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		FilteredPlugins.Add(PluginInfo);
 	}
 
-	// Now that we have processed all plugins, let's fixup any platforms.
+	// Now that we have processed all plugins, let's fix-up any thing else.
 	for (FPluginDataPtr PluginInfo : AllPlugins)
 	{
 		// Finally check if the platform does support all.
@@ -166,6 +185,20 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 			PluginInfo->SupportedPlatforms.Add(TEXT("Others"));
 		}
 		PluginInfo->SupportedPlatforms.Sort([](const FString& Lhs, const FString& Rhs) { return PlatformIdStringsToFilterId(Lhs) < PlatformIdStringsToFilterId(Rhs); });
+
+		for (const FString& PluginDependency : PluginInfo->Dependencies)
+		{
+			FPluginDataPtr* DependsOnPlugin = AllPlugins.FindByPredicate([PluginDependency](FPluginDataPtr PluginIt)
+				{
+					return PluginIt->PluginName == PluginDependency;
+				});
+
+			// May depend on a plugin that was missing from the source.
+			if (DependsOnPlugin != nullptr)
+			{
+				(*DependsOnPlugin)->PluginsThatDependOnThis.Add(PluginInfo->PluginName);
+			}
+		}
 	}
 
 	FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginName < B->PluginName; });
@@ -266,6 +299,29 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 
 		ColumnWidget = SupportedPlatformsWidget;
 	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_Dependencies)
+	{
+		FString DependenciesFormattedStr;
+		if (PluginDataItem->PluginsThatDependOnThis.Num() > 0)
+		{
+			DependenciesFormattedStr = FString::Printf(TEXT("Count: %d  -  ["), PluginDataItem->PluginsThatDependOnThis.Num());
+			for (int32 DependencyIdx = 0; DependencyIdx < PluginDataItem->PluginsThatDependOnThis.Num(); DependencyIdx++)
+			{
+				DependenciesFormattedStr += (PluginDataItem->PluginsThatDependOnThis[DependencyIdx] + (DependencyIdx < PluginDataItem->PluginsThatDependOnThis.Num() - 1 ? TEXT(",  ") : TEXT("")));
+			}
+			DependenciesFormattedStr += TEXT("]");
+		}
+
+
+		ColumnWidget = SNew(SHorizontalBox)
+			+SHorizontalBox::Slot()
+			.Padding(6.0f, 0.0f)
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(DependenciesFormattedStr))
+				.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+			];
+	}
 	else
 	{
 		ColumnWidget = SNullWidget::NullWidget;
@@ -350,8 +406,20 @@ void SQuickPluginListView::SortList()
 		else if (ListSortMode == EColumnSortMode::Descending)
 			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->Developer > B->Developer; });
 	}
+	else if (SortByColumn == PluginListViewHelpers::ListHeader_Dependencies)
+	{
+		if (ListSortMode == EColumnSortMode::Ascending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginsThatDependOnThis.Num() < B->PluginsThatDependOnThis.Num(); });
+		else if (ListSortMode == EColumnSortMode::Descending)
+			FilteredPlugins.Sort([](const FPluginDataPtr& A, const FPluginDataPtr& B) { return A->PluginsThatDependOnThis.Num() > B->PluginsThatDependOnThis.Num(); });
+	}
 
 	PluginDetailsView->RequestListRefresh();
+}
+
+bool SQuickPluginListView::CanEditPlugins() const
+{
+	return bIsProjectWritable;
 }
 
 #pragma optimize("", off)

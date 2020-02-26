@@ -40,6 +40,12 @@ struct FPluginData
 
 	// 
 	TArray<FString> SupportedPlatforms;
+
+	//
+	TArray<FString> Dependencies;
+
+	//
+	TArray<FString> PluginsThatDependOnThis;
 };
 
 typedef TSharedPtr<FPluginData> FPluginDataPtr;
@@ -97,6 +103,14 @@ public:
 	/** Destructor */
 	~SQuickPluginListView();
 
+public:
+
+	/** */
+	void NotifyProjectFileWriteStatusChanged(bool bIsReadOnly);
+
+	/** */
+	bool CanEditPlugins() const;
+
 private:
 	/** */
 	void PopulatePluginsAvailable();
@@ -135,4 +149,7 @@ private:
 
 	//
 	TArray<FString> FoundPlatforms;
+
+	//
+	bool bIsProjectWritable;
 };

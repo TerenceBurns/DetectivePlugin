@@ -26,12 +26,15 @@ public:
 	/** Destructor */
 	~SProjectFileInfo();
 
+public:
 
-	// SWidget interface
-	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
-	// End of SWidget interface
+	/**
+	 *
+	 */
+	void NotifyProjectFileWriteStatusChanged(bool bIsReadOnly);
 
 private:
+
 	/** 
 	 *
 	 */
@@ -47,6 +50,7 @@ private:
 	 */
 	void CreateProjectWritableNoticeWidget();
 
+
 private:
 
 	//
@@ -57,7 +61,4 @@ private:
 
 	//
 	bool bIsProjectWritable;
-
-	//
-	double LastReadOnlyCheckTime = 0.0;
 };

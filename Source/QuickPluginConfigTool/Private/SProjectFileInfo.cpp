@@ -15,8 +15,6 @@ namespace ProjectFileInfoPanelHelpers
 {
 	static const FSlateColor CanEditColour = FColor(32, 75, 16);
 	static const FSlateColor CanNotEditColour = FColor(75, 32, 16);
-
-	const double ProjectReadOnlyFlagPeriodicCheckTime = 1.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -25,11 +23,6 @@ namespace ProjectFileInfoPanelHelpers
 
 void SProjectFileInfo::Construct(const FArguments& InArgs)
 {
-	LastReadOnlyCheckTime = 0.0f;
-	// To use later.
-//	const FProjectDescriptor* UProjectDescriptor = IProjectManager::Get().GetCurrentProject();
-//	FString Ext = UProjectDescriptor->GetExtension();
-
 	ProjectFilePath = FPaths::GetProjectFilePath();
 	bIsProjectWritable = !IFileManager::Get().IsReadOnly(*ProjectFilePath);
 	
@@ -49,16 +42,6 @@ void SProjectFileInfo::Construct(const FArguments& InArgs)
 SProjectFileInfo::~SProjectFileInfo()
 {
 
-}
-
-
-void SProjectFileInfo::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
-{
-	if (InCurrentTime - LastReadOnlyCheckTime >= ProjectFileInfoPanelHelpers::ProjectReadOnlyFlagPeriodicCheckTime)
-	{
-		bIsProjectWritable = !IFileManager::Get().IsReadOnly(*FPaths::GetProjectFilePath());
-		LastReadOnlyCheckTime = InCurrentTime;
-	}
 }
 
 
@@ -155,5 +138,10 @@ void SProjectFileInfo::CreateProjectWritableNoticeWidget()
 	];
 }
 
+
+void SProjectFileInfo::NotifyProjectFileWriteStatusChanged(bool bIsReadOnly)
+{
+	bIsProjectWritable = !bIsReadOnly;
+}
 
 #undef LOCTEXT_NAMESPACE

@@ -26,7 +26,21 @@ public:
 	/** Destructor */
 	~SQuickPluginConfigTool();
 
+
+
+// Begin SWidget interface
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
+// End SWidget interface
+
 private:
 	/** Holds the vertical box for ini file categories. */
 	TSharedPtr<class SQuickPluginListView> PluginDetailsView;
+
+	TSharedPtr<class SProjectFileInfo> ProjectFileInfo;
+
+	//
+	bool bLastProjectCheckWasReadOnly = false;
+
+	//
+	double LastReadOnlyCheckTime = 0.0;
 };
