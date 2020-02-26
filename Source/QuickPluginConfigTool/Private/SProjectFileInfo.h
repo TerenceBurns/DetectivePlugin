@@ -24,41 +24,11 @@ public:
 	void Construct(const FArguments& InArgs);
 
 	/** Destructor */
-	~SProjectFileInfo();
-
-public:
-
-	/**
-	 *
-	 */
-	void NotifyProjectFileWriteStatusChanged(bool bIsReadOnly);
-
-private:
-
-	/** 
-	 *
-	 */
-	FSlateColor GetInfoBackgroundColour() const;
-
-	/**
-	 *
-	 */
-	int32 HandleNoticeSwitcherWidgetIndex() const;
-
-	/**
-	 * 
-	 */
-	void CreateProjectWritableNoticeWidget();
+		virtual ~SProjectFileInfo() {}
 
 
 private:
-
-	//
-	TSharedPtr<SWidget> ProjectWritableNotice;
 
 	//
 	FString ProjectFilePath;
-
-	//
-	bool bIsProjectWritable;
 };

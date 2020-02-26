@@ -28,18 +28,18 @@ void SQuickPluginConfigTool::Construct(const FArguments& InArgs)
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
-			[
-				SAssignNew(PluginDetailsView, SQuickPluginListView)			
-			]
-			+ SVerticalBox::Slot()
 			.AutoHeight()
 			[
 				SAssignNew(ProjectFileInfo, SProjectFileInfo)
+				.Visibility_Lambda([this]() { return bLastProjectCheckWasReadOnly ? EVisibility::Visible : EVisibility::Collapsed; })
+			]
+			+ SVerticalBox::Slot()
+			[
+				SAssignNew(PluginDetailsView, SQuickPluginListView)			
 			]
 		]
 	];
 
-	ProjectFileInfo->NotifyProjectFileWriteStatusChanged(bLastProjectCheckWasReadOnly);
 	PluginDetailsView->NotifyProjectFileWriteStatusChanged(bLastProjectCheckWasReadOnly);
 }
 
@@ -57,7 +57,6 @@ void SQuickPluginConfigTool::Tick(const FGeometry& AllottedGeometry, const doubl
 		if (IFileManager::Get().IsReadOnly(*FPaths::GetProjectFilePath()) != bLastProjectCheckWasReadOnly)
 		{
 			bLastProjectCheckWasReadOnly = !bLastProjectCheckWasReadOnly;
-			ProjectFileInfo->NotifyProjectFileWriteStatusChanged(bLastProjectCheckWasReadOnly);
 			PluginDetailsView->NotifyProjectFileWriteStatusChanged(bLastProjectCheckWasReadOnly);
 		}
 		LastReadOnlyCheckTime = InCurrentTime;
