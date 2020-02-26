@@ -133,7 +133,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 
 		for (const FModuleDescriptor& Module : Plugin->GetDescriptor().Modules)
 		{
-			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
+			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet);
 		}
 
 		for (const FPluginReferenceDescriptor& Dependency : Plugin->GetDescriptor().Plugins)

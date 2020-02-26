@@ -45,6 +45,7 @@ public class QuickPluginConfigTool : ModuleRules
 				// ... add private dependencies that you statically link with here ...	
                 "EditorStyle",
                 "PropertyEditor",
+                "TargetPlatform",
             }
 			);
 		
