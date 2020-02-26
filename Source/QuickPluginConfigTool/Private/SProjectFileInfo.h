@@ -24,7 +24,7 @@ public:
 	void Construct(const FArguments& InArgs);
 
 	/** Destructor */
-		virtual ~SProjectFileInfo() {}
+	virtual ~SProjectFileInfo() {}
 
 
 private:

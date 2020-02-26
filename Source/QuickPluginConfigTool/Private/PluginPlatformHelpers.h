@@ -29,8 +29,8 @@ namespace PlatformColours
 	static FColor Win32 = FColor(177, 70, 194);
 
 	static FColor Mac = FColor(0, 125, 221);
-	static FColor Linux = FColor(0, 0, 0);
-	static FColor LinuxAArch64 = FColor(17, 17, 17);
+	static FColor Linux = FColor(255, 69, 0);
+	static FColor LinuxAArch64 = FColor(255, 69, 0);
 
 	static FColor PS4 = FColor(0, 55, 145);
 	static FColor XboxOne = FColor(14, 122, 13);
