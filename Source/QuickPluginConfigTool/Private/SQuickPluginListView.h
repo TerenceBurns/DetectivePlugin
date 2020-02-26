@@ -60,16 +60,12 @@ public:
 
 	SLATE_BEGIN_ARGS(SPluginInfoRow) { }
 		SLATE_ARGUMENT(FPluginDataPtr, PluginDataItem)
+		SLATE_ARGUMENT(bool*, CanEditFlag)
 	SLATE_END_ARGS()
 
 
 	/** */
-	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTableView)
-	{
-		PluginDataItem = InArgs._PluginDataItem;
-
-		SMultiColumnTableRow<FPluginDataPtr>::Construct(FSuperRowType::FArguments().Padding(1.0f), InOwnerTableView);
-	}
+	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTableView);
 	
 	/** */
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
@@ -78,9 +74,15 @@ private:
 	/** */
 	void OnPluginEnabledChanged(ECheckBoxState EnabledCheckBoxState);
 
+	/** */
+	bool CanEditPlugin() const;
+
 private:
 	//
 	FPluginDataPtr PluginDataItem;
+
+	// 
+	bool* CanEditFlag;
 };
 
 

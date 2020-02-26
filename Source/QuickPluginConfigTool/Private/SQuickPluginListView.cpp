@@ -208,149 +208,8 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 TSharedRef<ITableRow> SQuickPluginListView::OnGenerateWidgetForList(FPluginDataPtr InItem, const TSharedRef<STableViewBase> &OwnerTable)
 {
 	return SNew(SPluginInfoRow, OwnerTable)
-			.PluginDataItem(InItem);
-}
-
-
-TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColumnName)
-{
-	TSharedPtr<SWidget> ColumnWidget;
-	if (InColumnName == PluginListViewHelpers::ListHeader_EnablePlugin)
-	{
-		ColumnWidget = SNew(SBox)
-			.HAlign(EHorizontalAlignment::HAlign_Center)
-			[
-				SNew(SCheckBox)
-				.IsChecked(PluginDataItem->bEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-				.OnCheckStateChanged(this, &SPluginInfoRow::OnPluginEnabledChanged)
-			];
-	}
-	else if (InColumnName == PluginListViewHelpers::ListHeader_PluginName)
-	{
-		ColumnWidget = SNew(STextBlock)
-			.Text(FText::FromString(PluginDataItem->PluginName));
-	}
-	else if (InColumnName == PluginListViewHelpers::ListHeader_EnabledByDefault)
-	{
-		ColumnWidget = SNew(SBox)
-			.HAlign(EHorizontalAlignment::HAlign_Center)
-			[
-				SNew(SCheckBox)
-				.IsChecked(PluginDataItem->bIsEnabledByDefault ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-				.IsEnabled(false)
-			];
-
-	}
-	else if (InColumnName == PluginListViewHelpers::ListHeader_PluginLocation)
-	{
-		ColumnWidget = SNew(STextBlock)
-			.Text(FText::FromString(PluginDataItem->PluginLocation))
-			.ColorAndOpacity(FSlateColor::UseSubduedForeground());
-	}
-	else if (InColumnName == PluginListViewHelpers::ListHeader_Developer)
-	{
-		ColumnWidget = SNew(STextBlock)
-			.Text(FText::FromString(PluginDataItem->Developer))
-			.ColorAndOpacity(FSlateColor::UseSubduedForeground());
-	}
-	else if (InColumnName == PluginListViewHelpers::ListHeader_SupportedPlatforms)
-	{
-		TSharedPtr<SHorizontalBox> SupportedPlatformsWidget = SNew(SHorizontalBox);
-		if (PluginDataItem->SupportedPlatforms.Num() == 0)
-		{
-			FText PlatformsLabel = PluginDataItem->bIsEditorOnlyPlugin ? LOCTEXT("EditorOnlyLabel", "Editor Only") : LOCTEXT("AllPlatformsLabel", "All");
-			SupportedPlatformsWidget->AddSlot()
-			.Padding(2.0f, 0.0f)
-			[
-				SNew(SBorder)
-				.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
-				.BorderBackgroundColor(PluginDataItem->bIsEditorOnlyPlugin ? PlatformColours::Editor_Only : PlatformColours::Others)
-				.ToolTipText(PlatformsLabel)
-				.HAlign(EHorizontalAlignment::HAlign_Center)
-				[
-					SNew(STextBlock)
-					.Text(PlatformsLabel)
-					.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
-					.ColorAndOpacity(!PluginDataItem->bIsEditorOnlyPlugin ? FLinearColor::White : FLinearColor::Black)
-				]
-			];
-		}
-		else
-		{
-			for (auto& SupportedPlatformStr : PluginDataItem->SupportedPlatforms)
-			{
-				FColor BGColour = GetBorderColourForPlatform(SupportedPlatformStr);
-				SupportedPlatformsWidget->AddSlot()
-				.Padding(1.0f, 0.0f)
-				[
-					SNew(SBorder)
-					.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
-					.BorderBackgroundColor(BGColour)
-					.ToolTipText(FText::FromString(SupportedPlatformStr))
-					.HAlign(EHorizontalAlignment::HAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(SupportedPlatformStr))
-						.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
-					]
-				];
-			}
-		}
-
-		ColumnWidget = SupportedPlatformsWidget;
-	}
-	else if (InColumnName == PluginListViewHelpers::ListHeader_Dependencies)
-	{
-		FString DependenciesFormattedStr;
-		if (PluginDataItem->PluginsThatDependOnThis.Num() > 0)
-		{
-			DependenciesFormattedStr = FString::Printf(TEXT("Count: %d  -  ["), PluginDataItem->PluginsThatDependOnThis.Num());
-			for (int32 DependencyIdx = 0; DependencyIdx < PluginDataItem->PluginsThatDependOnThis.Num(); DependencyIdx++)
-			{
-				DependenciesFormattedStr += (PluginDataItem->PluginsThatDependOnThis[DependencyIdx] + (DependencyIdx < PluginDataItem->PluginsThatDependOnThis.Num() - 1 ? TEXT(",  ") : TEXT("")));
-			}
-			DependenciesFormattedStr += TEXT("]");
-		}
-
-
-		ColumnWidget = SNew(SHorizontalBox)
-			+SHorizontalBox::Slot()
-			.Padding(6.0f, 0.0f)
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString(DependenciesFormattedStr))
-				.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
-			];
-	}
-	else
-	{
-		ColumnWidget = SNullWidget::NullWidget;
-	}
-
-	return ColumnWidget.ToSharedRef();
-}
-
-
-void SPluginInfoRow::OnPluginEnabledChanged(ECheckBoxState EnabledCheckBoxState)
-{
-	PluginDataItem->bEnabled = EnabledCheckBoxState == ECheckBoxState::Checked;
-
-	FText FailMessage;
-	if (IProjectManager::Get().SetPluginEnabled(PluginDataItem->PluginName, EnabledCheckBoxState == ECheckBoxState::Checked, FailMessage))
-	{
-		if (IProjectManager::Get().SaveCurrentProjectToDisk(FailMessage))
-		{
-			// Notify user of save?
-		}
-		else
-		{
-			FMessageDialog::Open(EAppMsgType::Ok, FailMessage);
-		}
-	}
-	else
-	{
-		FMessageDialog::Open(EAppMsgType::Ok, FailMessage);
-	}
+			.PluginDataItem(InItem)
+			.CanEditFlag(&bIsProjectWritable);
 }
 
 
@@ -417,12 +276,13 @@ void SQuickPluginListView::SortList()
 	PluginDetailsView->RequestListRefresh();
 }
 
+
 bool SQuickPluginListView::CanEditPlugins() const
 {
 	return bIsProjectWritable;
 }
 
-#pragma optimize("", off)
+
 void SQuickPluginListView::OnPlatformFilterChanged(EPlatformFilter NewFilter)
 {
 	FilteredPlugins.Empty();
@@ -458,7 +318,167 @@ void SQuickPluginListView::OnPlatformFilterChanged(EPlatformFilter NewFilter)
 	SortList();
 	PluginDetailsView->RequestListRefresh();
 }
-#pragma optimize("", on)
 
+
+
+///////////////////////////////////////////////////////////
+// SPluginInfoRow
+
+
+void SPluginInfoRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTableView)
+{
+	PluginDataItem = InArgs._PluginDataItem;
+	CanEditFlag = InArgs._CanEditFlag;
+
+	SMultiColumnTableRow<FPluginDataPtr>::Construct(FSuperRowType::FArguments().Padding(1.0f), InOwnerTableView);
+}
+
+TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColumnName)
+{
+	TSharedPtr<SWidget> ColumnWidget;
+	if (InColumnName == PluginListViewHelpers::ListHeader_EnablePlugin)
+	{
+		ColumnWidget = SNew(SBox)
+			.HAlign(EHorizontalAlignment::HAlign_Center)
+			[
+				SNew(SCheckBox)
+				.IsChecked(PluginDataItem->bEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+				.OnCheckStateChanged(this, &SPluginInfoRow::OnPluginEnabledChanged)
+				.IsEnabled(this, &SPluginInfoRow::CanEditPlugin)
+			];
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_PluginName)
+	{
+		ColumnWidget = SNew(STextBlock)
+			.Text(FText::FromString(PluginDataItem->PluginName));
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_EnabledByDefault)
+	{
+		ColumnWidget = SNew(SBox)
+			.HAlign(EHorizontalAlignment::HAlign_Center)
+			[
+				SNew(SCheckBox)
+				.IsChecked(PluginDataItem->bIsEnabledByDefault ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+			.IsEnabled(false)
+			];
+
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_PluginLocation)
+	{
+		ColumnWidget = SNew(STextBlock)
+			.Text(FText::FromString(PluginDataItem->PluginLocation))
+			.ColorAndOpacity(FSlateColor::UseSubduedForeground());
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_Developer)
+	{
+		ColumnWidget = SNew(STextBlock)
+			.Text(FText::FromString(PluginDataItem->Developer))
+			.ColorAndOpacity(FSlateColor::UseSubduedForeground());
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_SupportedPlatforms)
+	{
+		TSharedPtr<SHorizontalBox> SupportedPlatformsWidget = SNew(SHorizontalBox);
+		if (PluginDataItem->SupportedPlatforms.Num() == 0)
+		{
+			FText PlatformsLabel = PluginDataItem->bIsEditorOnlyPlugin ? LOCTEXT("EditorOnlyLabel", "Editor Only") : LOCTEXT("AllPlatformsLabel", "All");
+			SupportedPlatformsWidget->AddSlot()
+				.Padding(2.0f, 0.0f)
+				[
+					SNew(SBorder)
+					.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
+				.BorderBackgroundColor(PluginDataItem->bIsEditorOnlyPlugin ? PlatformColours::Editor_Only : PlatformColours::Others)
+				.ToolTipText(PlatformsLabel)
+				.HAlign(EHorizontalAlignment::HAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(PlatformsLabel)
+				.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+				.ColorAndOpacity(!PluginDataItem->bIsEditorOnlyPlugin ? FLinearColor::White : FLinearColor::Black)
+				]
+				];
+		}
+		else
+		{
+			for (auto& SupportedPlatformStr : PluginDataItem->SupportedPlatforms)
+			{
+				FColor BGColour = GetBorderColourForPlatform(SupportedPlatformStr);
+				SupportedPlatformsWidget->AddSlot()
+					.Padding(1.0f, 0.0f)
+					[
+						SNew(SBorder)
+						.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
+					.BorderBackgroundColor(BGColour)
+					.ToolTipText(FText::FromString(SupportedPlatformStr))
+					.HAlign(EHorizontalAlignment::HAlign_Center)
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(SupportedPlatformStr))
+					.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+					]
+					];
+			}
+		}
+
+		ColumnWidget = SupportedPlatformsWidget;
+	}
+	else if (InColumnName == PluginListViewHelpers::ListHeader_Dependencies)
+	{
+		FString DependenciesFormattedStr;
+		if (PluginDataItem->PluginsThatDependOnThis.Num() > 0)
+		{
+			DependenciesFormattedStr = FString::Printf(TEXT("Count: %d  -  ["), PluginDataItem->PluginsThatDependOnThis.Num());
+			for (int32 DependencyIdx = 0; DependencyIdx < PluginDataItem->PluginsThatDependOnThis.Num(); DependencyIdx++)
+			{
+				DependenciesFormattedStr += (PluginDataItem->PluginsThatDependOnThis[DependencyIdx] + (DependencyIdx < PluginDataItem->PluginsThatDependOnThis.Num() - 1 ? TEXT(",  ") : TEXT("")));
+			}
+			DependenciesFormattedStr += TEXT("]");
+		}
+
+
+		ColumnWidget = SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.Padding(6.0f, 0.0f)
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(DependenciesFormattedStr))
+			.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+			];
+	}
+	else
+	{
+		ColumnWidget = SNullWidget::NullWidget;
+	}
+
+	return ColumnWidget.ToSharedRef();
+}
+
+
+void SPluginInfoRow::OnPluginEnabledChanged(ECheckBoxState EnabledCheckBoxState)
+{
+	PluginDataItem->bEnabled = EnabledCheckBoxState == ECheckBoxState::Checked;
+
+	FText FailMessage;
+	if (IProjectManager::Get().SetPluginEnabled(PluginDataItem->PluginName, EnabledCheckBoxState == ECheckBoxState::Checked, FailMessage))
+	{
+		if (IProjectManager::Get().SaveCurrentProjectToDisk(FailMessage))
+		{
+			// Notify user of save?
+		}
+		else
+		{
+			FMessageDialog::Open(EAppMsgType::Ok, FailMessage);
+		}
+	}
+	else
+	{
+		FMessageDialog::Open(EAppMsgType::Ok, FailMessage);
+	}
+}
+
+
+bool SPluginInfoRow::CanEditPlugin() const
+{
+	return *CanEditFlag;
+}
 
 #undef LOCTEXT_NAMESPACE

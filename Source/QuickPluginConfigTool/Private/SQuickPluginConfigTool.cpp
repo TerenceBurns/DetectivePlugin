@@ -38,6 +38,9 @@ void SQuickPluginConfigTool::Construct(const FArguments& InArgs)
 			]
 		]
 	];
+
+	ProjectFileInfo->NotifyProjectFileWriteStatusChanged(bLastProjectCheckWasReadOnly);
+	PluginDetailsView->NotifyProjectFileWriteStatusChanged(bLastProjectCheckWasReadOnly);
 }
 
 
