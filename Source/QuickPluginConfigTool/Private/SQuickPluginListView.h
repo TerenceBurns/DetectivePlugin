@@ -31,6 +31,9 @@ struct FPluginData
 
 	//
 	bool bIsEditorOnlyPlugin = true;
+
+	//
+	bool bHasEditorOnlyModule = false;
 	
 	//
 	FString PluginLocation;

@@ -133,6 +133,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 
 		for (const FModuleDescriptor& Module : Plugin->GetDescriptor().Modules)
 		{
+			PluginInfo->bHasEditorOnlyModule |= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
 			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
 		}
 
@@ -148,7 +149,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		{
 			for (const FModuleDescriptor& PluginModule : Plugin->GetDescriptor().Modules)
 			{
-				if (PluginModule.WhitelistPlatforms.Num() == 0)
+				if (PluginModule.WhitelistPlatforms.Num() == 0 && !(PluginModule.Type == EHostType::Editor || PluginModule.Type == EHostType::EditorNoCommandlet || PluginModule.Type == EHostType::EditorAndProgram))
 				{
 					PluginInfo->SupportedPlatforms.Empty();
 					break;
@@ -386,15 +387,15 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 				[
 					SNew(SBorder)
 					.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
-				.BorderBackgroundColor(PluginDataItem->bIsEditorOnlyPlugin ? PlatformColours::Editor_Only : PlatformColours::Others)
-				.ToolTipText(PlatformsLabel)
-				.HAlign(EHorizontalAlignment::HAlign_Center)
-				[
-					SNew(STextBlock)
-					.Text(PlatformsLabel)
-				.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
-				.ColorAndOpacity(!PluginDataItem->bIsEditorOnlyPlugin ? FLinearColor::White : FLinearColor::Black)
-				]
+					.BorderBackgroundColor(PluginDataItem->bIsEditorOnlyPlugin ? PlatformColours::Editor_Only : PlatformColours::Others)
+					.ToolTipText(PlatformsLabel)
+					.HAlign(EHorizontalAlignment::HAlign_Center)
+					[
+						SNew(STextBlock)
+						.Text(PlatformsLabel)
+						.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+						.ColorAndOpacity(!PluginDataItem->bIsEditorOnlyPlugin ? FLinearColor::White : FLinearColor::Black)
+					]
 				];
 		}
 		else
@@ -415,6 +416,25 @@ TSharedRef<SWidget> SPluginInfoRow::GenerateWidgetForColumn(const FName& InColum
 						.Text(FText::FromString(SupportedPlatformStr))
 					.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
 					]
+					];
+			}
+
+			if (PluginDataItem->bHasEditorOnlyModule)
+			{
+				SupportedPlatformsWidget->AddSlot()
+					.Padding(2.0f, 0.0f)
+					[
+						SNew(SBorder)
+						.BorderImage(FEditorStyle::GetBrush("SettingsEditor.CheckoutWarningBorder"))
+						.BorderBackgroundColor(PlatformColours::Editor_Only)
+						.ToolTipText(LOCTEXT("EditorLabel", "Editor"))
+						.HAlign(EHorizontalAlignment::HAlign_Center)
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("EditorLabel", "Editor"))
+							.Font(FEditorStyle::GetFontStyle("PropertyWindow.NormalFont"))
+							.ColorAndOpacity(FLinearColor::Black)
+						]
 					];
 			}
 		}
