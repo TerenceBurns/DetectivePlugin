@@ -8,6 +8,9 @@
 ///////////////////////////////////////////////////////////////////////
 // SPlatformFilterButton
 
+/**
+ * Slate widget which holds toggle for the given platform.
+ */
 class SPlatformFilterButton
 	: public SCompoundWidget
 {
@@ -25,34 +28,34 @@ public:
 	SLATE_END_ARGS()
 
 
-	/** Constructs this widget with InArgs */
+	/** Creation of the slate widget for the button. */
 	void Construct(const FArguments& InArgs);
 
-	/** Destructor */
-	~SPlatformFilterButton() {}
+	/** */
+	virtual ~SPlatformFilterButton() {}
 
 
 private:
 
 	/** 
-	 *
+	 * What should we do when the status of this platform is toggled?
 	 */
 	void OnCheckStatusChanged(ECheckBoxState EnabledCheckBoxState);
 
 	/**
-	 *
+	 * What colour is the button?
 	 */
 	FSlateColor GetFilterForegroundColor() const;
 
 private:
 
-	//
+	// A handle for the current toggle status of this platform in filtering the view.
 	TSharedPtr<SCheckBox> FilterCheckItem;
 
-	//
+	// Information to help identify this platform in the view.
 	TSharedPtr<FPlatformStyleInfo> PlatformStyleInfo;
 
-	//
+	// We notify any listeners when this platform is toggled.
 	FOnFilterToggled OnFilterToggled;
 };
 
@@ -146,6 +149,7 @@ SPlatformListFilter::~SPlatformListFilter()
 {
 
 }
+
 
 void SPlatformListFilter::OnFilterButtonToggled(EPlatformFilter Filter, bool bWasEnabled)
 {

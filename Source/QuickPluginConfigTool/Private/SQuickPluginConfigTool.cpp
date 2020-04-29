@@ -6,15 +6,19 @@
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
 
-
+/**
+ * Constants for this tool.
+ */
 namespace QuickPluginConfigToolViewConstants
 {
+	// How often (in Seconds) should we query the status of the uproject file.
 	const double ProjectReadOnlyFlagPeriodicCheckTime = 1.0f;
 }
 
 
 ///////////////////////////////////////////////////////////////////////
 // SQuickPluginConfigTool
+
 
 void SQuickPluginConfigTool::Construct(const FArguments& InArgs)
 {
@@ -54,6 +58,7 @@ void SQuickPluginConfigTool::Tick(const FGeometry& AllottedGeometry, const doubl
 {
 	if (InCurrentTime - LastReadOnlyCheckTime >= QuickPluginConfigToolViewConstants::ProjectReadOnlyFlagPeriodicCheckTime)
 	{
+		// Did the write status change?
 		if (IFileManager::Get().IsReadOnly(*FPaths::GetProjectFilePath()) != bLastProjectCheckWasReadOnly)
 		{
 			bLastProjectCheckWasReadOnly = !bLastProjectCheckWasReadOnly;

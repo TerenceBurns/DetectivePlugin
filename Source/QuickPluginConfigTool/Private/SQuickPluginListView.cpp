@@ -10,6 +10,7 @@
 
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
 
+
 namespace PluginListViewHelpers
 {
 	static FName ListHeader_EnablePlugin("EnablePlugin");
@@ -34,8 +35,10 @@ namespace PluginListViewHelpers
 	const float ListHeader_Dependencies_Ratio = 3.0f / 5.0f;
 }
 
+
 ///////////////////////////////////////////////////////////////////////
 // SQuickPluginListView
+
 
 void SQuickPluginListView::Construct(const FArguments& InArgs)
 {
@@ -92,7 +95,7 @@ void SQuickPluginListView::Construct(const FArguments& InArgs)
 					.DefaultLabel(LOCTEXT("PluginSupportedPlatformsHeader", "Supported Platforms"))
 					.FillWidth(PluginListViewHelpers::ListHeader_SupportedPlatforms_Ratio)
 					.OnSort(this, &SQuickPluginListView::OnColumnSortModeChanged)
-//					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation)
+//					+ SHeaderRow::Column(PluginListViewHelpers::ListHeader_PluginLocation) // We might decide to show this later.
 //					.DefaultLabel(LOCTEXT("PluginLocationHeader", "Plugin Location"))
 //					.FillWidth(PluginListViewHelpers::ListHeader_PluginLocation_Ratio)
 //					.SortMode(this, &SQuickPluginListView::GetColumnSortMode, PluginListViewHelpers::ListHeader_PluginLocation)
@@ -123,6 +126,7 @@ SQuickPluginListView::~SQuickPluginListView()
 
 void SQuickPluginListView::PopulatePluginsAvailable()
 {
+	// Let's iterate over all registered uplugins and grab the information we need for the table.
 	for (const TSharedRef<IPlugin>& Plugin : IPluginManager::Get().GetDiscoveredPlugins())
 	{
 		TSharedRef<FPluginData> PluginInfo = MakeShareable(new FPluginData(Plugin->GetName()));

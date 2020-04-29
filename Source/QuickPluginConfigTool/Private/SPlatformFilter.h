@@ -10,7 +10,7 @@
 
 
 /**
- * Slate widget to allow users to edit Config Settings
+ * Slate widget used to control the list view based on toggled platforms.
  */
 class SPlatformListFilter
 	: public SCompoundWidget
@@ -26,29 +26,29 @@ public:
 	SLATE_END_ARGS()
 
 
-	/** Constructs this widget with InArgs */
+	/** Create a slate widget which lists all the platforms we can toggle in the view. */
 	void Construct(const FArguments& InArgs);
 
 	/** Destructor */
-	~SPlatformListFilter();
+	virtual ~SPlatformListFilter();
 
 private:
 	/**
-	 *
+	 * Handle a platform being updated. We should notify the list view.
 	 */
 	void OnFilterButtonToggled(EPlatformFilter Filter, bool bWasEnabled);
 
 private:
 
-	//
+	// The widget which holds the platform toggle buttons.
 	TSharedPtr<SHorizontalBox> FilterHBox;
 
-	//
+	// Hook which can be registered with to hear about platform changes in the filter.
 	FOnPluginPlatformFilterChanged OnPluginPlatformFilterChanged;
 
-	//
+	// What is the current filter? (Default to show all platforms)
 	EPlatformFilter CurrentFilter = EPlatformFilter::All;
 
-	// 
+	// Which platforms were found by the plugin system when parsing uplugin files.
 	TArray<FString> PlatformsExplicitlySupported;
 };

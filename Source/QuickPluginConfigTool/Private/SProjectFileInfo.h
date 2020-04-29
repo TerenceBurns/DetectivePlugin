@@ -20,15 +20,15 @@ public:
 	SLATE_END_ARGS()
 
 
-	/** Constructs this widget with InArgs */
+	/** Slate widget which shows information about the project's .uproject file. */
 	void Construct(const FArguments& InArgs);
 
-	/** Destructor */
+	/**  */
 	virtual ~SProjectFileInfo() {}
 
 
 private:
 
-	//
+	// The abs path to the .uproject file of this project.
 	FString ProjectFilePath;
 };
