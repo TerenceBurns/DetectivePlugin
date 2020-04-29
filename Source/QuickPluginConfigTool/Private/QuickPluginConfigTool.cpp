@@ -47,7 +47,7 @@ void FQuickPluginConfigToolModule::StartupModule()
 	}
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(QuickPluginConfigToolTabName, FOnSpawnTab::CreateRaw(this, &FQuickPluginConfigToolModule::OnSpawnPluginTab))
-		.SetDisplayName(LOCTEXT("FQuickPluginConfigToolTabTitle", "QuickPluginConfigTool"))
+		.SetDisplayName(LOCTEXT("FQuickPluginConfigToolTabTitle", "Detective Plugin"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 }
 

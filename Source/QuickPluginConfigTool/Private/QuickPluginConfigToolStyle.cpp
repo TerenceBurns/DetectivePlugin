@@ -48,9 +48,9 @@ const FVector2D Icon40x40(40.0f, 40.0f);
 TSharedRef< FSlateStyleSet > FQuickPluginConfigToolStyle::Create()
 {
 	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("QuickPluginConfigToolStyle"));
-	Style->SetContentRoot(IPluginManager::Get().FindPlugin("QuickPluginConfigTool")->GetBaseDir() / TEXT("Resources"));
+	Style->SetContentRoot(IPluginManager::Get().FindPlugin("DetectivePlugin")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("QuickPluginConfigTool.OpenPluginWindow", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
+	Style->Set("QuickPluginConfigTool.OpenPluginWindow", new IMAGE_BRUSH(TEXT("icons8-detective-hat-50"), Icon40x40));
 
 	return Style;
 }

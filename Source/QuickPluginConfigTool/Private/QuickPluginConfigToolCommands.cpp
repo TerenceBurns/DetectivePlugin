@@ -7,7 +7,7 @@
 
 void FQuickPluginConfigToolCommands::RegisterCommands()
 {
-	UI_COMMAND(OpenPluginWindow, "QuickPluginConfigTool", "Bring up QuickPluginConfigTool window", EUserInterfaceActionType::Button, FInputGesture());
+	UI_COMMAND(OpenPluginWindow, "Detective Plugin", "Audit which plugins make it into your project.", EUserInterfaceActionType::Button, FInputGesture());
 }
 
 
