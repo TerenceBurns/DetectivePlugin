@@ -131,7 +131,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 	{
 		TSharedRef<FPluginData> PluginInfo = MakeShareable(new FPluginData(Plugin->GetName()));
 		PluginInfo->PluginLocation = Plugin->GetBaseDir();
-		PluginInfo->bIsEnabledByDefault = Plugin->IsEnabledByDefault();
+		PluginInfo->bIsEnabledByDefault = Plugin->IsEnabledByDefault(true);
 		PluginInfo->bEnabled = Plugin->IsEnabled();
 		PluginInfo->Developer = Plugin->GetDescriptor().CreatedBy;
 
