@@ -137,8 +137,8 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 
 		for (const FModuleDescriptor& Module : Plugin->GetDescriptor().Modules)
 		{
-			PluginInfo->bHasEditorOnlyModule |= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
-			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet || Module.Type == EHostType::EditorAndProgram);
+			PluginInfo->bHasEditorOnlyModule |= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet);
+			PluginInfo->bIsEditorOnlyPlugin &= (Module.Type == EHostType::Editor || Module.Type == EHostType::EditorNoCommandlet);
 		}
 
 		for (const FPluginReferenceDescriptor& Dependency : Plugin->GetDescriptor().Plugins)
@@ -153,7 +153,7 @@ void SQuickPluginListView::PopulatePluginsAvailable()
 		{
 			for (const FModuleDescriptor& PluginModule : Plugin->GetDescriptor().Modules)
 			{
-				if (PluginModule.WhitelistPlatforms.Num() == 0 && !(PluginModule.Type == EHostType::Editor || PluginModule.Type == EHostType::EditorNoCommandlet || PluginModule.Type == EHostType::EditorAndProgram))
+				if (PluginModule.WhitelistPlatforms.Num() == 0 && !(PluginModule.Type == EHostType::Editor || PluginModule.Type == EHostType::EditorNoCommandlet))
 				{
 					PluginInfo->SupportedPlatforms.Empty();
 					break;
