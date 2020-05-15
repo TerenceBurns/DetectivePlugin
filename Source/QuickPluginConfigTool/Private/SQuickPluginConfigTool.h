@@ -7,8 +7,9 @@
 #include "Widgets/SWidget.h"
 #include "Widgets/SCompoundWidget.h"
 
+
 /**
- * Slate widget to allow users to edit Config Settings
+ * Slate widget to allow users to edit which Plugins are enabled for this project.
  */
 class SQuickPluginConfigTool
 	: public SCompoundWidget
@@ -20,27 +21,26 @@ public:
 	SLATE_END_ARGS()
 
 
-	/** Constructs this widget with InArgs */
+	/** The body of the slate window for our plugin settings widget. */
 	void Construct(const FArguments& InArgs);
 
 	/** Destructor */
-	~SQuickPluginConfigTool();
-
-
+	virtual ~SQuickPluginConfigTool();
 
 // Begin SWidget interface
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 // End SWidget interface
 
 private:
-	/** Holds the vertical box for ini file categories. */
+	// Reference to the table view which displays information about the filtered plugins. 
 	TSharedPtr<class SQuickPluginListView> PluginDetailsView;
 
+	// Reference to the slate widget which shows us relevant information about the status of the .uproject file.
 	TSharedPtr<class SProjectFileInfo> ProjectFileInfo;
 
-	//
+	// Was the .uproject file readonly or writable the last time we checked.
 	bool bLastProjectCheckWasReadOnly = false;
 
-	//
+	// When was the last time we determined the status of the .uproject file?
 	double LastReadOnlyCheckTime = 0.0;
 };

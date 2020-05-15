@@ -9,7 +9,7 @@
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
 
 /** 
- * 
+ * Colour information we use to relay the status of the uproject file.
  */
 namespace ProjectFileInfoPanelHelpers
 {
