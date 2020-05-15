@@ -6,12 +6,13 @@
 #include "LevelEditor.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
-
 #include "SQuickPluginConfigTool.h"
 
 static const FName QuickPluginConfigToolTabName("QuickPluginConfigTool");
 
+
 #define LOCTEXT_NAMESPACE "FQuickPluginConfigToolModule"
+
 
 void FQuickPluginConfigToolModule::StartupModule()
 {
@@ -46,9 +47,10 @@ void FQuickPluginConfigToolModule::StartupModule()
 	}
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(QuickPluginConfigToolTabName, FOnSpawnTab::CreateRaw(this, &FQuickPluginConfigToolModule::OnSpawnPluginTab))
-		.SetDisplayName(LOCTEXT("FQuickPluginConfigToolTabTitle", "QuickPluginConfigTool"))
+		.SetDisplayName(LOCTEXT("FQuickPluginConfigToolTabTitle", "Detective Plugin"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 }
+
 
 void FQuickPluginConfigToolModule::ShutdownModule()
 {
@@ -61,6 +63,7 @@ void FQuickPluginConfigToolModule::ShutdownModule()
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(QuickPluginConfigToolTabName);
 }
 
+
 TSharedRef<SDockTab> FQuickPluginConfigToolModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
 	return SNew(SDockTab)
@@ -71,15 +74,18 @@ TSharedRef<SDockTab> FQuickPluginConfigToolModule::OnSpawnPluginTab(const FSpawn
 		];
 }
 
+
 void FQuickPluginConfigToolModule::PluginButtonClicked()
 {
 	FGlobalTabmanager::Get()->InvokeTab(QuickPluginConfigToolTabName);
 }
 
+
 void FQuickPluginConfigToolModule::AddMenuExtension(FMenuBuilder& Builder)
 {
 	Builder.AddMenuEntry(FQuickPluginConfigToolCommands::Get().OpenPluginWindow);
 }
+
 
 void FQuickPluginConfigToolModule::AddToolbarExtension(FToolBarBuilder& Builder)
 {

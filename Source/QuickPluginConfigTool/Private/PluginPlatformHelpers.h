@@ -16,12 +16,12 @@
  * Lumin
  * HoloLens
  * 
- * 
+ * etc.
  * 
  */
 
  /**
-  *
+  * Identifiable colours for the different platforms.
   */
 namespace PlatformColours
 {
@@ -50,7 +50,7 @@ namespace PlatformColours
 }
 
 /**
- *
+ * Flags used to generate the list of plugins shown based on target platforms.
  */
 enum class EPlatformFilter : uint32
 {
@@ -82,7 +82,7 @@ ENUM_CLASS_FLAGS(EPlatformFilter);
 
 
 /**
- *
+ * Simple struct that holds some platform inforation for the plugin view.
  */
 struct FPlatformStyleInfo
 {
@@ -97,6 +97,11 @@ struct FPlatformStyleInfo
 	{}
 };
 
+
+/**
+ * Collection of specified platforms from stock UE4 plugins.
+ * We use these to generate filters. Any platforms not in this list are covered by "Others"
+ */
 namespace PlatformStyleInfo
 {
 	static TSharedPtr<FPlatformStyleInfo> Win64StyleInfo = MakeShareable(new FPlatformStyleInfo(TEXT("Win64"), PlatformColours::Win64, EPlatformFilter::Win64));
@@ -133,6 +138,10 @@ namespace PlatformStyleInfo
 	};
 }
 
+
+/**
+ * Simple conversion of platform name to platform colour specified by us above.
+ */
 FColor GetBorderColourForPlatform(const FString& InPlatformName)
 {
 	if (InPlatformName == TEXT("Win64"))
@@ -166,6 +175,9 @@ FColor GetBorderColourForPlatform(const FString& InPlatformName)
 }
 
 
+/**
+ * Parse filter flags for list of platforms (in string format).
+ */
 TArray<FString> PlatformFilterToPlatformIdStrings(EPlatformFilter NewFilter)
 {
 	TArray<FString> PlatformIdStrings;
@@ -202,6 +214,9 @@ TArray<FString> PlatformFilterToPlatformIdStrings(EPlatformFilter NewFilter)
 }
 
 
+/**
+ * Convert platform string to EPlatformFilter id.
+ */
 EPlatformFilter PlatformIdStringsToFilterId(const FString InPlatformId)
 {
 	if (InPlatformId == TEXT("Win64"))
