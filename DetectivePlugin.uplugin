@@ -8,8 +8,9 @@
 	"CreatedBy": "Trifolium Digital Limited",
 	"CreatedByURL": "http://www.trifoliumdigital.co.uk",
 	"DocsURL": "",
-	"MarketplaceURL": "",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/44c95a9d27754a3cbf664b334ccc5b19",
 	"SupportURL": "",
+	"EngineVersion": "4.22.0",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -18,7 +19,10 @@
 		{
 			"Name": "QuickPluginConfigTool",
 			"Type": "EditorNoCommandlet",
-			"LoadingPhase": "PostEngineInit"
+			"LoadingPhase": "PostEngineInit",
+			"WhitelistPlatforms": [
+				"Win64"
+			]
 		}
 	]
 }
