@@ -10,7 +10,7 @@
 	"DocsURL": "",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/44c95a9d27754a3cbf664b334ccc5b19",
 	"SupportURL": "",
-	"EngineVersion": "4.24.0",
+	"EngineVersion": "4.25.0",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -21,7 +21,8 @@
 			"Type": "EditorNoCommandlet",
 			"LoadingPhase": "PostEngineInit",
 			"WhitelistPlatforms": [
-				"Win64"
+				"Win64",
+				"Mac"
 			]
 		}
 	]

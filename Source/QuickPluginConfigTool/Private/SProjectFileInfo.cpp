@@ -13,8 +13,8 @@
  */
 namespace ProjectFileInfoPanelHelpers
 {
-	static const FSlateColor CanEditColour = FColor(32, 75, 16);
-	static const FSlateColor CanNotEditColour = FColor(179, 58, 58);
+static const FSlateColor CanEditColour(FLinearColor(32.0f/255.0f, 75.0f/255.0f, 16.0f/255.0f));
+	static const FSlateColor CanNotEditColour(FLinearColor(179.0f/255.0f, 58.0f/255.0f, 58.0f/255.0f));
 }
 
 ///////////////////////////////////////////////////////////////////////
